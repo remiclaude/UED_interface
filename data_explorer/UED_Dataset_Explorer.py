@@ -15,17 +15,17 @@ import glob
 # from inspect import CO_VARKEYWORDS
 import numbers
 
-# import pathlib
+
 import sys
 import zipfile
-# from colorsys import yiq_to_rgb
+
 from functools import partial
 from re import T
 import io
 import win32clipboard
 import pyqtgraph.exporters
 from PIL import Image
-# import colorcet as cc
+
 from datetime import datetime as dtm
 import imageio.v2 as iio
 import math
@@ -36,10 +36,10 @@ import numpy as np
 import numpy_indexed as npi
 import pandas as pd
 import pandasgui as pdgui
-# from datetime import datetime as dtm
+
 import PyQt5
 import pyqtgraph as pg
-# import pyqtgraph.parametertree.parameterTypes as pTypes
+
 import tifffile
 import wmi
 from lmfit.models import (ConstantModel, GaussianModel, LinearModel, LorentzianModel, QuadraticModel, VoigtModel)
@@ -53,17 +53,12 @@ from pyqtgraph.Qt import QtCore, QtGui
 from scipy import special
 from scipy.optimize import curve_fit
 from scipy.special import wofz
-# from sklearn.feature_extraction import img_to_graph
-# import patterns as pat
-# import plotter
-# import select_roi as sel_roi
 from numba_progress import ProgressBar
 import copy
-# import matplotlib.pyplot as plt
 import matplotlib
 import pyqtgraph.console
 from PySide2.QtWidgets import QMessageBox as qmsg
-# from qt_material import apply_stylesheet
+
 
 
 matplotlib.use('Qt5Agg')
@@ -73,9 +68,7 @@ warnings.filterwarnings("ignore")
 windll.shcore.SetProcessDpiAwareness(1)
 
 pg.setConfigOptions(antialias=True)
-# os.environ["QT_SCALE_FACTOR "] = "1.75"
-# os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = '0'
-# print(os.environ)
+
 if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
     PyQt5.QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
@@ -89,11 +82,6 @@ colors_list = []
 for i in range(jet.N):
     colors_list.append(tuple([z * 255 for z in jet(i)[:-1]]))
 cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 12), color=colors_list)
-# gray = cm.get_cmap('Greys', 12)
-# greys_list = []
-# for i in range(gray.N):
-#     colors_list.append(tuple([z * 255 for z in gray(i)[:-1]]))
-# cmap_grey = pg.ColorMap(pos=np.linspace(0.0, 1.0, 12), color=greys_list)
 
 
 class bcolors:
@@ -523,13 +511,13 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
     path = starting_path
     chosen = False
     self_df = 0
-    # self_img_arr = 0
+
     if zipped is False:
         if dropped_path is None:
             path = QtWidgets.QFileDialog.getExistingDirectory(w, "Select Folder", path)
         else:
             path = dropped_path
-        # path = r"F:\UED_measurements\2021\03 March\01\rocking_curve_300k"
+
         w.setWindowTitle(f"UED Dataset Explorer - {path}")
         if path != '' and file_list is None:
             chosen = True
@@ -570,8 +558,6 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
         with pg.ProgressDialog("Loading images...", 0, len(file_list)) as dlg:
             dlg.setWindowTitle("Loading images...")
             dlg.setFixedSize(400, 100)
-        # with QtWidgets.QProgressDialog("Loading images...",'Cancel', 0, len(file_list), self) as dlg:
-            # dlg.setWindowModality(Qt.WindowModal)
             comp = 0
             for file in file_list[:]:
                 if "master" in file:
@@ -623,7 +609,7 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                             #check if a column with the name 'Acquisition_mode' exists
                             if 'Acquisition_mode' in self_df.columns:
                                 # print(self_df['Acquisition_mode'][0])
-                                if acquisition_mode == 'EXTG':
+                                if acquisition_mode == 'EXTG' and w.checkBox_pump.isChecked():
                                     # print(list(h5.keys()))
                                     ## withdraw compromised data
                                     try:
@@ -759,8 +745,46 @@ def check_shutter():
             #reset index of df
             df = df.reset_index(drop=True)
 
+def remove_hot(imgON, imgOFF, n=2):
+    print(np.shape(imgON))
+    ratio = []
+    if len(np.shape(imgON)) > 2:
+        for o in range(np.shape(imgON)[0]):
+            diff = np.divide(imgON[o], imgOFF[o], out=np.ones_like(imgON[o]), where=imgOFF[o]!=0)
+            mean=np.mean(diff)
+            s = np.std(diff)
+            pic_pos_above = np.where(diff > n)
+            pic_pos_below = np.where(diff < 1/n)
+            pic_pos_off = np.where((imgOFF[o] == 0) & (imgON[o]>n))
+            for i in range(len(pic_pos_off[0])):
+                imgON[o][pic_pos_off[0][i], pic_pos_off[1][i]] = 0
+            for i in range(len(pic_pos_above[0])):
+                imgON[o][pic_pos_above[0][i], pic_pos_above[1][i]] = imgOFF[o][pic_pos_above[0][i], pic_pos_above[1][i]]
+            for i in range(len(pic_pos_below[0])):
+                imgON[o][pic_pos_below[0][i], pic_pos_below[1][i]] = imgOFF[o][pic_pos_below[0][i], pic_pos_below[1][i]]
+            ratio.append(1e2*(len(pic_pos_above[0])+len(pic_pos_below[0])+len(pic_pos_off[0]))/(512*512))
+    else:
+        print('one image processing')
+        diff = np.divide(imgON, imgOFF, out=np.ones_like(imgON), where=imgOFF!=0)
+        pic_pos_above = np.where(diff > n)
+        pic_pos_below = np.where(diff < 1/n)
+        pic_pos_off = np.where((imgOFF == 0) & (imgON > n))
+        ratio.append(1e2*(len(pic_pos_above[0])+len(pic_pos_below[0])+len(pic_pos_off[0]))/(512*512))
+        for i in range(len(pic_pos_off[0])):
+            imgON[pic_pos_off[0][i], pic_pos_off[1][i]] = 0
+        for i in range(len(pic_pos_above[0])):
+            imgON[pic_pos_above[0][i], pic_pos_above[1][i]] = imgOFF[pic_pos_above[0][i], pic_pos_above[1][i]]
+        for i in range(len(pic_pos_below[0])):
+            imgON[pic_pos_below[0][i], pic_pos_below[1][i]] = imgOFF[pic_pos_below[0][i], pic_pos_below[1][i]]
+    print('average hot pixels = ',np.mean(np.array(ratio)))
+    return imgON, imgOFF
 
+def remove_hot_instruction():
+    global img_arr, img_arr_2
+    img_arr, img_arr_2 = remove_hot(img_arr, img_arr_2, n=2)
+    scroll_data(0)
 
+w.actionRemove_hot_n_2.triggered.connect(remove_hot_instruction())
 
 
 def load_npy():

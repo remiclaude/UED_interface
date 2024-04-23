@@ -296,13 +296,6 @@
                 <string>Image tools</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_7">
-                <item row="2" column="0">
-                 <widget class="QCheckBox" name="sum_chkbx">
-                  <property name="text">
-                   <string>Sum All</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="5" column="0">
                  <spacer name="verticalSpacer_2">
                   <property name="orientation">
@@ -348,17 +341,17 @@
                   </item>
                  </widget>
                 </item>
+                <item row="2" column="0">
+                 <widget class="QCheckBox" name="sum_chkbx">
+                  <property name="text">
+                   <string>Sum All</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="3" column="0">
                  <widget class="QCheckBox" name="checkBox">
                   <property name="text">
                    <string>Sum range:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QPushButton" name="pushButton_5">
-                  <property name="text">
-                   <string>Rotate</string>
                   </property>
                  </widget>
                 </item>
@@ -369,10 +362,10 @@
                   </property>
                  </widget>
                 </item>
-                <item row="6" column="0" colspan="2">
-                 <widget class="QLabel" name="label_7">
+                <item row="4" column="0">
+                 <widget class="QPushButton" name="pushButton_5">
                   <property name="text">
-                   <string/>
+                   <string>Rotate</string>
                   </property>
                  </widget>
                 </item>
@@ -380,6 +373,13 @@
                  <widget class="QLabel" name="label_6">
                   <property name="text">
                    <string>Colormap:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="0" colspan="2">
+                 <widget class="QLabel" name="label_7">
+                  <property name="text">
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -393,6 +393,13 @@
                   </property>
                   <property name="singleStep">
                    <number>1</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QPushButton" name="export_img_btn">
+                  <property name="text">
+                   <string>Img to Clipboard</string>
                   </property>
                  </widget>
                 </item>
@@ -415,10 +422,25 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0">
-                 <widget class="QPushButton" name="export_img_btn">
+                <item row="7" column="0">
+                 <widget class="QCheckBox" name="checkBox_4">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="autoFillBackground">
+                   <bool>false</bool>
+                  </property>
                   <property name="text">
-                   <string>Img to Clipboard</string>
+                   <string>Check pump </string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -789,6 +811,7 @@
     <addaction name="actionGaussian_smooth"/>
     <addaction name="actionGaussian_smooth_ON_OFF"/>
     <addaction name="actionON_OFF"/>
+    <addaction name="actionRemove_hot_n_2"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -1138,6 +1161,11 @@
   <action name="actionON_OFF">
    <property name="text">
     <string>ON-OFF</string>
+   </property>
+  </action>
+  <action name="actionRemove_hot_n_2">
+   <property name="text">
+    <string>Remove hot (n=2)</string>
    </property>
   </action>
  </widget>
