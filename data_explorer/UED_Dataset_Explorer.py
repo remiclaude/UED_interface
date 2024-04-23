@@ -347,8 +347,8 @@ os.chdir(dirpath)
 sys.path.append(dirpath)
 img_arr = dummy_arr.copy()
 dummy_arr = 0
-img_arr = np.load('graphite_300K.npy')
-img_arr_2 = np.load('graphite_300K.npy')
+img_arr = np.zeros((512, 512))
+img_arr_2 = np.zeros((512,512))
 if img_arr.ndim == 2:
     img_arr = np.array([img_arr])
 pg.setConfigOptions(imageAxisOrder='row-major')
@@ -464,14 +464,10 @@ def metadata_panel_show():
 
 w.actionMetadata_Panel.triggered.connect(metadata_panel_show)
 
-# w.tabWidget.hide()
-# w.gridLayout.setColumnStretch(1,0)
-# print(w.tabWidget.isHidden())
-
 w.show()
 
-# starting_path = find_drive_by_label() + r"\\My Drive\\UED_measurements\\"
-starting_path = find_drive_by_label() + r"\\UED_measurements\\"
+
+starting_path = r'D:\UED_measurements'
 filename_opened = ''
 
 def open_console():
