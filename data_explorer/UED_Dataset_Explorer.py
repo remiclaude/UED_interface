@@ -526,144 +526,6 @@ class SPE_File(object):
         self._fid.close()
 
 
-# class loading_thread_class(QThread):
-#     started = QtCore.pyqtSignal(int)
-#     updated = QtCore.pyqtSignal(float)
-#     finished = QtCore.pyqtSignal(int)
-#     # terminate = QtCore.pyqtSignal(int)
-
-#     def __init__(self, zipped=True):
-#         super(QThread, self).__init__()
-#         global starting_path, filename_opened
-#         self.zipped = zipped
-#         self.df = 0
-#         self.path = starting_path
-#         self.filename_opened = filename_opened
-#         self.chosen = False
-#         if self.zipped == False:
-#             self.path = QtWidgets.QFileDialog.getExistingDirectory(w, "Select Folder", self.path)
-#             # self.path = r"F:\UED_measurements\2021\03 March\01\rocking_curve_300k"
-#             if self.path != '':
-#                 self.chosen = True
-#                 self.list_tiff = natsort.natsorted(glob.glob(self.path + '/' + '*.tiff'))
-#                 self.list_h5 = natsort.natsorted(glob.glob(self.path + '/' + '*.h5'))
-#                 self.list_spe = natsort.natsorted(glob.glob(self.path + '/' + '*.SPE'))
-#                 if len(self.list_tiff) > 0:
-#                     self.file_list = self.list_tiff
-#                 elif len(self.list_h5) > 0:
-#                     self.file_list = self.list_h5
-#                 else:
-#                     self.file_list = self.list_spe
-#             starting_path = self.path
-#             filename_opened = os.path.normpath(self.path).split(os.sep)[-1]
-#         elif self.zipped == True:
-#             self.fname = QtWidgets.QFileDialog.getOpenFileName(w, "Select Archive", self.path, "Zip Files (*.zip)")
-#             if self.fname[0] != '':
-#                 self.chosen = True
-#                 self.archive = zipfile.ZipFile(self.fname[0], 'r')
-#                 self.file_list = self.archive.namelist()[1:]
-#                 self.file_list = natsort.natsorted(self.file_list)
-#             starting_path = os.path.split(self.fname[0])[0]
-#             filename_opened, _ = os.path.splitext(os.path.split(self.fname[0])[1])
-#         self.is_Tiff = False
-#         self.img_list = []
-#         self.i = 0
-
-#     def run(self):
-#         global df, img_arr
-#         self.i = 0
-#         self.img_arr = 0
-#         if self.chosen:
-#             self.started.emit(1)
-#             for file in self.file_list[:20000]:
-#                 if file.endswith('.tiff'):
-#                     self.is_Tiff = True
-#                     if self.zipped:
-#                         file = self.archive.open(file)
-#                     try:
-#                         with tifffile.TiffFile(file) as tif:
-#                             self.img_list.append(np.array(tif.asarray(), dtype=np.int32))
-#                             if self.i == 0:
-#                                 self.df = pd.DataFrame(tif.imagej_metadata, index=[0])
-#                             else:
-#                                 self.df1 = pd.DataFrame(tif.imagej_metadata, index=[i])
-#                                 self.df = pd.concat([self.df, self.df1], ignore_index=True)
-#                         self.updated.emit((self.i + 1) / len(self.file_list) * 100)
-#                     except:
-#                         print(f"Error opening TIFF {file}")
-#                     self.i = self.i + 1
-#                 elif file.endswith('.h5'):
-#                     if self.zipped:
-#                         file = self.archive.open(file)
-#                     try:
-#                         with h5py.File(file, 'r') as h5:
-#                             self.dset_name = list(h5.keys())[0]
-#                             self.dset = h5[self.dset_name]
-#                             self.attributes = list(self.dset.attrs.keys())
-#                             self.img_list.append(np.array(self.dset[:], dtype=np.int32))
-#                             if self.i == 0:
-#                                 self.df = pd.DataFrame([dict(self.dset.attrs.items())], index=[0])
-#                             else:
-#                                 self.df1 = pd.DataFrame([dict(self.dset.attrs.items())], index=[self.i])
-#                                 self.df = pd.concat([self.df, self.df1])
-#                     except:
-#                         print(f"Error opening H5 {file}")
-#                     self.i = self.i + 1
-#                     self.updated.emit((self.i + 1) / len(self.file_list) * 100)
-#                 elif file.endswith('.SPE'):
-#                     try:
-#                         self.raw_image = iio.imread(file)
-#                         self.img_list.append(np.array(self.raw_image, dtype=np.int32))
-#                         if self.i == 0:
-#                             self.df = pd.DataFrame([dict(self.raw_image.meta)], index=[0])
-#                         else:
-#                             self.df1 = pd.DataFrame([dict(self.raw_image.meta)], index=[self.i])
-#                             self.df = pd.concat([self.df, self.df1])
-#                     except:
-#                         print(f"Error opening SPE {file}")
-#                     self.i = self.i + 1
-#                     self.updated.emit((self.i + 1) / len(self.file_list) * 100)
-
-#             self.img_arr = check_image_range(self.img_list)
-#             self.img_list = []
-#             if self.is_Tiff:
-#                 try:
-#                     self.df = self.df.drop(
-#                         columns=['ImageJ', 'images', 'hyperstack', 'mode'])
-#                     self.df = self.df.rename(
-#                         columns={
-#                             'temperature_sample': 'Temperature_A',
-#                             'temperature_finger': 'Temperature_B',
-#                             'pressure': 'Pressure',
-#                             'time': 'Time'
-#                         })
-#                 except:
-#                     pass
-
-#             # else:
-#                 # self.d1 = len(self.img_list)
-#                 # self.d2 = self.img_list[0].shape[0]
-#                 # self.d3 = self.img_list[0].shape[1]
-#                 # self.img_arr = np.empty((self.d1, self.d2, self.d3), dtype=np.int32)
-#                 # for self.i in range(len(self.img_list)):
-#                 #     coords = (np.array(np.where(self.img_list[0] > 1e7)))
-#                 #     self.img_list[0][coords[0], coords[1]] = 0
-#                 #     self.img_arr[self.i] = np.abs(self.img_list[0])
-#                 #     self.img_list = self.img_list[1:]
-#             df = self.df
-#             img_arr = self.img_arr
-#             self.img_arr = np.zeros(1)
-#             try:
-#                 df.rename(columns={"delay": "LTS_position"}, inplace=True)
-#             except:
-#                 pass
-#             try:
-#                 df['Delay_ps'] = df['LTS_position']*6.66
-#                 df['Time'] = df['Time'].astype(float)
-#             except:
-#                 pass
-#             self.finished.emit(0)
-
 def loading_function(zipped = True, dropped_path = None, file_list = None):
     global starting_path, filename_opened, df, img_arr, imgON, imgOFF
     df = 0
@@ -2170,11 +2032,6 @@ def fit_data(V=False, fit=True):
                 show_fits(i+1)
         w_plot.show()
         
-    # fit_data_thread.start()
-    # loading_pb(0)
-    # w_prog.show()
-    # fit_data_thread.finished.connect(show_fits)
-    # fit_data_thread.updated.connect(loading_pb)
 
     
 list_rois = []
@@ -2292,9 +2149,6 @@ def subtract_first_img():
 
 
 w.export_img_btn.clicked.connect(export_img_origin)
-# w.greyscale_chkbx.clicked.connect(update_colormap)
-# w.export_arr_btn.clicked.connect(export_arr_origin)
-# w.export_fit_btn.clicked.connect(export_fit_origin)
 w.actionSubtract_first_image.triggered.connect(subtract_first_img)
 
 
@@ -2324,23 +2178,6 @@ w.actionDataset_ON_OFF.triggered.connect(export_Dataset_ON_OFF)
 
 # ---------------------------------TIME RESOLVED-----------------------------------------
 
-# def group_data_by_delay():
-#     global df, img_arr
-#     try:
-#         notes_df = df['notes']
-#     except Exception:
-#         pass
-
-#     groups, means = npi.group_by(df['LTS_position'].to_numpy()).mean(img_arr)
-#     img_arr = means
-#     df = df.groupby(['LTS_position']).mean()
-#     df.reset_index(inplace=True)
-#     df['Delay_ps'] = df['LTS_position']*6.66
-#     try:
-#         df['notes'] = notes_df
-#     except Exception:
-#         pass
-#     scroll_data(0)
 def group_data_by_delay():
     global df, img_arr, img_arr_2, imgON, imgOFF
     try:
@@ -2379,34 +2216,6 @@ def group_data_by_delay():
     scroll_data(0)
     plot_metadata()
         
-# def group_data_by_delay():
-#     global df, img_arr
-#     try:
-#         notes_df = df['notes']
-#     except Exception:
-#         pass
-
-#     # change_indices = np.where(np.diff(np.stack(df['LTS_position'])) != 0)[0]
-#     # group_numbers = df.groupby(['LTS_position']).count()
-#     #count how many times each delay is repeated
-#     group_numbers = df.groupby(['LTS_position']).size()
-#     print(group_numbers)
-    
-#     print(len(group_numbers))
-#     loop_delays = group_numbers.to_numpy()[0]
-#     print(loop_delays)
-#     group_boundaries = np.arange(0, len(df), loop_delays)
-#     print(group_boundaries)
-#     summed_images = []
-    
-#     for i in range(len(group_boundaries) - 1):
-#         group_start = group_boundaries[i]
-#         group_end = group_boundaries[i+1]
-#         group_images = img_arr[group_start:group_end]
-#         group_sum = np.sum(group_images, axis=0)
-#         summed_images.append(group_sum)
-#     img_arr = np.array(summed_images)
-#     scroll_data(0)
 
 
 def bin_data(bin):
@@ -2470,9 +2279,6 @@ p2 = w_plot.plot.plot()
 def apply_params_time_resolved():
     global p2, p1
     p0 = [float(w_timeres.mu_edit.text()), float(w_timeres.sigma_edit.text()), float(w_timeres.gamma_edit.text()), float(w_timeres.ampl_edit.text()), float(w_timeres.offset_edit.text())]
-    # low_bounds = [float(w_timeres.mu_low_edit.text()), float(w_timeres.sigma_low_edit.text()), float(w_timeres.gamma_low_edit.text()), float(w_timeres.ampl_low_edit.text()), float(w_timeres.offset_low_edit.text())]
-    # high_bounds = [float(w_timeres.mu_high_edit.text()), float(w_timeres.sigma_high_edit.text()), float(w_timeres.gamma_high_edit.text()), float(w_timeres.ampl_high_edit.text()), float(w_timeres.offset_high_edit.text())]
-
     p1_data = p1.getData()
     x_Data = p1_data[0]
     p2.clear()
@@ -2597,18 +2403,8 @@ def swap():
 w.actionSwap_On_Off.triggered.connect(swap)
 
 
-# ----------------------------------------------------------------------------------------
-
 # -----------------------------------RADIAL AVERAGE----------------------------------------
 
-# line_roi1 = pg.LineSegmentROI([100,0], [257,257], angle = -45, pen = pg.mkPen('r', width=4))
-# line_roi2 = pg.LineSegmentROI([100,0], [257,257], angle = -45, pen = pg.mkPen('r', width=4))
-# [h.hide() for h in line_roi1.getHandles()]
-# [h.hide() for h in line_roi2.getHandles()]
-# w.widget.addItem(line_roi1)
-# w.widget.addItem(line_roi2)
-# line_roi1.hide()
-# line_roi2.hide()
 
 imv_v = w.widget.getView()
 line_top = pg.PlotCurveItem(x=[1, 200], y=[1, 200], pen=pg.mkPen('r', width=4))
@@ -2616,8 +2412,6 @@ line_bottom = pg.PlotCurveItem(x=[1, 200], y=[1, 200], pen=pg.mkPen('r', width=4
 imv_v.addItem(line_top, line_bottom)
 
 
-# line_top = pg.InfiniteLine(angle=0, movable=False, pen=pg.mkPen('r', width=4), span = (0.5,1))
-# line_bottom = pg.InfiniteLine(angle = 0, movable = False, pen = pg.mkPen('r', width=4))
 w.widget.addItem(line_top)
 w.widget.addItem(line_bottom)
 line_top.hide()
@@ -2887,45 +2681,10 @@ w.actionPattern_simulator.triggered.connect(w_simulator.show)
 
 w_simulator.widget.setColorMap(pg.colormap.get('CET-R4'))
 w_simulator.widget.setImage(img, autoRange=False, autoLevels=False, autoHistogramRange=False)
-# w_simulator.widget.autoRange()
-# w_simulator.widget.autoLevels()
-# w_simulator.widget.autoHistogramRange()
+
 w_simulator.widget.ui.roiBtn.hide()
 w_simulator.widget.ui.menuBtn.hide()
 
-
-# def rotation_matrix(theta, x, y, z):  # defines the 3D rotation matrix from a quaternion composed by theta and the components of the rotation axis
-#     q0 = np.cos(theta / 2)
-#     q1 = np.float64(x) * np.sin(theta / 2)
-#     q2 = np.float64(y) * np.sin(theta / 2)
-#     q3 = np.float64(z) * np.sin(theta / 2)
-#     rot = np.array([
-#         [
-#             q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2,
-#             2 * q1 * q2 - 2 * q0 * q3,
-#             2 * q1 * q3 + 2 * q0 * q2,
-#         ],
-#         [
-#             2 * q1 * q2 + 2 * q0 * q3,
-#             q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2,
-#             2 * q2 * q3 - 2 * q0 * q1,
-#         ],
-#         [
-#             2 * q1 * q3 - 2 * q0 * q2,
-#             2 * q2 * q3 + 2 * q0 * q1,
-#             q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2,
-#         ],
-#     ])
-#     return rot
-
-
-# def rotate_list_vectors(list_vec, rotation_matrix):
-#     result = []
-#     # if np.array(list_vec).ndim==1:
-#     #     list_vec = [np.array(list_vec)]
-#     for vec in list_vec:
-#         result.append(np.dot(rotation_matrix, vec))
-#     return result
 
 
 @vectorize([float64(float64, float64, float64, float64, float64, float64)])
@@ -2941,31 +2700,6 @@ def map_q(detector, k_i):
 tt_status = 0
 
 
-# @njit(parallel=True)
-# def calc_intensity_2(detector_complex, struct, detector, q_map, f_map, theta, theta_arr, status, k = np.array([89,0,0]), p = 0):
-#     global tt_status
-#     # range_theta = np.argwhere(theta_arr >= theta).flatten()
-#     detector_complex[:, :] = 0
-#     progress = np.zeros(detector.shape[1])
-#     # rnd_img = np.random.rand(detector.shape[0], detector.shape[1])*2-1
-#     for tt in prange(detector.shape[1]):
-#         for ee in range(detector.shape[0]):
-#             S = 0
-#             # q = q_map[ee, tt]+(np.random.rand(3)*2-1)/10
-#             # q = q_map[ee, tt]
-#             #generate a random number between -1 and 1
-#             # rnd = np.random.rand(3)*2-1
-#             # q = q_map[ee, tt]+rnd_img[ee,tt]*k*p
-#             q = q_map[ee, tt]+(random.random()*2-1)*k*p
-#             # f = f_map[ee, tt]
-#             for part in struct:
-#                 Q = (dot_product(q[0], q[1], q[2], part[0], part[1], part[2]))
-#                 E =  np.exp(1j * Q)
-#                 S = S + E
-#             A = np.real(S * S.conjugate())
-#             detector_complex[ee, tt] = A
-#         progress[tt] = 1
-#         status.update(1)
 
 @njit(parallel=True)
 def calc_intensity_2(detector_complex, struct, detector, q_map, status, k=np.array([89, 0, 0]), p=0):
