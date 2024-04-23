@@ -426,15 +426,6 @@ def copy_table_entry(event):
 w.tableView.doubleClicked.connect(copy_table_entry)
 
 
-# sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-# sizePolicy.setHorizontalStretch(0)
-# sizePolicy.setVerticalStretch(0)
-# sizePolicy.setHeightForWidth(w.widget.sizePolicy().hasHeightForWidth())
-# w.widget.setSizePolicy(sizePolicy)
-# w.widget.setMinimumSize(QtCore.QSize(600, 600))
-# w.widget.setObjectName("widget") ghhyg
-
-
 w_pat = uic.loadUi("./patterns.ui", QtWidgets.QMainWindow())
 w_prog = uic.loadUi("./progress.ui", QtWidgets.QDialog())
 w_plot = uic.loadUi("./plotter.ui")
@@ -695,21 +686,13 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                     show_error("No metadata found")
             df = self_df
             self_df = 0
-            # try:
+
             df.rename(columns={"delay": "LTS_position"}, inplace=True)
             df['Delay_ps'] = df['LTS_position']*6.66
-            #df['Time'] = df['Time'].astype(float)
-            #print(file_name)
-            # print(file_list[:][:][:25])
-            # print(str(file).split['/'][-1])
-            # df['file_name'] = file_name
-            #print(' I AM HERREEEEEE' )
-            # print(str(file).split['/'][-1])
+
             if 'Time_for_humans' not in df.columns:
                 df['Time_for_humans'] = str(dtm.fromtimestamp(df['Time']))
-            # except Exception as e:
-            #     show_error(f"No {str(e)} column found")
-            #     pass
+
     w.widget.setLevels(0, 10*np.mean(img_arr[0]))
     w.widget.setHistogramRange(0, 10*np.mean(img_arr[0]))
     check_shutter()
@@ -798,11 +781,9 @@ def load_single_SPE():
     fname = QtWidgets.QFileDialog.getOpenFileName(w, "Select File", path, "SPE Files (*.SPE)")
     img1 = iio.imread(fname[0])
     img_arr = np.array([img1], dtype=np.int32)
-    # img_arr = np.random.rand(1, 100, 100)
 
-    # print(img_arr.shape)
     df = pd.DataFrame({key: pd.Series(value) for key, value in dict(img1.meta).items()})
-    # df = df.T
+
     scroll_data(0)
 
 
@@ -847,7 +828,6 @@ def load_single_H5_serie():
         dset = h5[dset_name]
         # attributes = list(dset.attrs.keys())
         df1 = pd.DataFrame([dict(dset.attrs.items())], index=[0])
-        # df = df1.explode(['Time', 'Pressure', 'Temperature_A', 'Temperature_B', 'Sensor_A_Ohm', 'Sensor_B_Ohm', 'LTS_position'])
         df = df1.explode(list(df1.columns))
         df.reset_index(drop=True, inplace=True)
         df['LTS_position'] = np.stack(df['LTS_position'])
@@ -856,9 +836,6 @@ def load_single_H5_serie():
         coords = (np.array(np.where(img_arr > 1e7)))
         img_arr[coords[0], coords[1], coords[2]] = 0
         img_arr = np.rot90(img_arr, axes=(1, 2))
-        # print(coords)
-        # df1.to_pickle("test.pickle")
-        # print(df1)
     df = counting_loops(df)
     scroll_data(0)
     plot_metadata()
@@ -912,8 +889,6 @@ def load_H5_serie(file_list=None):
                 df1 = pd.DataFrame([dict(dset.attrs.items())], index=[0])
                 df = df1.explode(attributes)
                 df.reset_index(drop=True, inplace=True)
-                # df['file_name'] = np.stack(file)
-                # print(' I AM HEREEEEE')
                 df['LTS_position'] = np.stack(df['LTS_position'])
                 df['Delay_ps'] = np.stack(df['LTS_position'])*6.66
                 if 'Time_for_humans' not in df.columns:
@@ -969,13 +944,6 @@ fit_number = 0
 def open_folder():
     global loading_thread, fit_number, img_arr
     fit_number = 0
-    # loading_thread = loading_thread_class(zipped=False)
-    # loading_thread.start()
-    # loading_thread.updated.connect(loading_pb)
-    # loading_thread.started.connect(w_prog.show)
-    # loading_thread.finished.connect(w_prog.close)
-    # loading_thread.finished.connect(scroll_data)
-    # loading_thread.finished.connect(plot_metadata)
     loading_function(zipped=False)
     scroll_data(0)
     plot_metadata()
@@ -984,13 +952,6 @@ def open_folder():
 def open_ZIP():
     global loading_thread, fit_number
     fit_number = 0
-    # loading_thread = loading_thread_class(zipped=True)
-    # loading_thread.start()
-    # loading_thread.updated.connect(loading_pb)
-    # loading_thread.started.connect(w_prog.show)
-    # loading_thread.finished.connect(w_prog.close)
-    # loading_thread.finished.connect(scroll_data)
-    # loading_thread.finished.connect(plot_metadata)
     loading_function(zipped=True)
     scroll_data(0)
     plot_metadata()
@@ -1243,12 +1204,6 @@ def roi_update_plot(ro=0, index=0):
         vLine.hide()
         hLine.hide()
         fwhm_roi.hide()
-        # try:
-        #     w.widget.removeItem(vLine)
-        #     w.widget.removeItem(hLine)
-        #     w.widget.removeItem(fwhm_roi)
-        # except:
-        #     pass
 
 def setup_evolution():
     global df
@@ -1368,11 +1323,6 @@ w.comboBox_3.currentTextChanged.connect(set_colormap)
 def scroll_data(i):
     global img, img_arr, df, current_frame, image_offset, image_scale, z_scale_mode, colormap
         
-    # if w.greyscale_chkbx.isChecked():
-    #     w.widget.setColorMap(pg.colormap.get('CET-L1'))
-    # else:
-    #     w.widget.setColorMap(pg.colormap.get('CET-R4'))
-
     w.horizontalScrollBar.setMaximum(img_arr.shape[0] - 1)
     if z_scale_mode == 'linear':
         img = img_arr[i]
