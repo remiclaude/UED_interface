@@ -617,11 +617,8 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                                         if (data_pump[1] > data_pump[0] and np.sum(data_pump[::2])==0) or (data_pump[1] < data_pump[0]  and np.sum(data_pump[1::2])==0):
                                             img_list_2.append(np.array(h5[dset_name+'2'][:], dtype=precision))
                                         else:
-                                            print('THERE IS AN ISSUE, THE CHOPPER FAILED')
                                             comp = comp+1
-                                            print(data_pump)
-                                            print('sum over odd = ',np.sum(data_pump[1::2]))
-                                            print('sum over even = ',np.sum(data_pump[::2]))
+                                            print(comp, 'th compromised data', data_pump)
                                             del img_list[-1]
                                             self_df.drop(index=self_df.index[-1],axis=0,inplace=True)
                                     except:
