@@ -564,8 +564,8 @@ class AThread(QThread):
 thread = AThread()
 thread.updated.connect(plot_func)
 img_arr_old = img_arr.copy()*0.
-# folderpath = os.getcwd()
-folderpath = r'D:\UED_measurements'
+folderpath = os.getcwd()
+
 # folderpath = r"C:/Users/paull/OneDrive - epfl.ch/Documents/ued_test_files/test_01"
 new_main_window.folder_path_entry.setText(folderpath)
 

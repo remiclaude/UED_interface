@@ -264,9 +264,8 @@ ec.setDetectorConfig('trigger_mode', 'ints')
 
 url = "http://169.254.254.1/monitor/api/1.8.0/images/monitor"
 
-# bkg_file = h5py.File(r"bkg\bkg.h5", 'r')
-# bkg_img = np.array(bkg_file['data'], dtype=bool)
-bkg_img = np.zeros((512,512))
+bkg_file = h5py.File(r"bkg\bkg.h5", 'r')
+bkg_img = np.array(bkg_file['data'], dtype=bool)
 # inverted_bkg = (np.array(bkg_img, dtype=np.int32))*(-1)+1
 # inverted_bkg = inverted_bkg*0+1
 # print(inverted_bkg)
@@ -564,8 +563,8 @@ class AThread(QThread):
 thread = AThread()
 thread.updated.connect(plot_func)
 img_arr_old = img_arr.copy()*0.
-# folderpath = os.getcwd()
-folderpath = r'D:\UED_measurements'
+folderpath = os.getcwd()
+
 # folderpath = r"C:/Users/paull/OneDrive - epfl.ch/Documents/ued_test_files/test_01"
 new_main_window.folder_path_entry.setText(folderpath)
 
