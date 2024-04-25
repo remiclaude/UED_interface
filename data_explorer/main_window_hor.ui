@@ -18,7 +18,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normalon>main_window.ico</normalon>
+    <normalon>../../../../../../.designer/backup/main_window.ico</normalon>
    </iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -423,7 +423,7 @@
                  </widget>
                 </item>
                 <item row="7" column="0">
-                 <widget class="QCheckBox" name="checkBox_4">
+                 <widget class="QCheckBox" name="checkBox_pump">
                   <property name="enabled">
                    <bool>true</bool>
                   </property>

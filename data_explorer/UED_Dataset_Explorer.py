@@ -504,7 +504,6 @@ class SPE_File(object):
     def close(self):
         self._fid.close()
 
-
 def loading_function(zipped = True, dropped_path = None, file_list = None):
     global starting_path, filename_opened, df, img_arr, imgON, imgOFF
     df = 0
@@ -600,7 +599,6 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                             if acquisition_mode == 'EXTG':
                                 precision = np.int32                     
                             img_list.append(np.array(dset[:], dtype=precision))
-                            #print(len(img_list))
                             if i == 0:
                                 self_df = pd.DataFrame([dict(dset.attrs.items())], index=[0])
                             else:
@@ -608,9 +606,7 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                                 self_df = pd.concat([self_df, df1])
                             #check if a column with the name 'Acquisition_mode' exists
                             if 'Acquisition_mode' in self_df.columns:
-                                # print(self_df['Acquisition_mode'][0])
                                 if acquisition_mode == 'EXTG' and w.checkBox_pump.isChecked():
-                                    # print(list(h5.keys()))
                                     ## withdraw compromised data
                                     try:
                                         data_pump = np.array(h5['data_diode'][:], dtype=np.int16)
@@ -625,6 +621,7 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                                         img_list_2.append(np.array(h5[dset_name+'2'][:], dtype=precision))
                                     
                     except Exception:
+                        print(Exception)
                         print(f"Error opening H5 {file}")
                     i = i + 1
                 
@@ -779,9 +776,9 @@ def remove_hot(imgON, imgOFF, n=2):
 def remove_hot_instruction():
     global img_arr, img_arr_2
     img_arr, img_arr_2 = remove_hot(img_arr, img_arr_2, n=2)
-    scroll_data(0)
+    # scroll_data(0)
 
-w.actionRemove_hot_n_2.triggered.connect(remove_hot_instruction())
+w.actionRemove_hot_n_2.triggered.connect(remove_hot_instruction)
 
 
 def load_npy():
