@@ -617,6 +617,7 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                                             print(comp, 'th compromised data', data_pump)
                                             del img_list[-1]
                                             self_df.drop(index=self_df.index[-1],axis=0,inplace=True)
+                                            i = i-1
                                     except:
                                         img_list_2.append(np.array(h5[dset_name+'2'][:], dtype=precision))
                                     
@@ -624,6 +625,7 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                         print(Exception)
                         print(f"Error opening H5 {file}")
                     i = i + 1
+                    # print('number of images: ', i)
                 
                 elif file.endswith('.SPE'):
                     try:
@@ -644,11 +646,13 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                 img_arr = check_image_range(img_list)
             else:
                 #convert list to array without increasing memory usage=
+                print('building img_arr')
                 imgON = np.stack(img_list)
                 img_list = []
                 imgOFF = np.stack(img_list_2)
                 img_list_2 = []
                 img_arr = imgON
+                print('building done')
             if is_Tiff:
                 try:
                     self_df = self_df.drop(
@@ -666,22 +670,30 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                     show_error("No metadata found")
             df = self_df
             self_df = 0
-
+            print('length of arguement: ',len(df['LTS_position']))
+            print('lenght of df : ', len(df))
+            print(df['LTS_position'])
+            print('lenght of imgON:', len(imgON))
+            print('lenght of imgOFF:', len(imgOFF))
+            
             df.rename(columns={"delay": "LTS_position"}, inplace=True)
             df['Delay_ps'] = df['LTS_position']*6.66
 
             if 'Time_for_humans' not in df.columns:
                 df['Time_for_humans'] = str(dtm.fromtimestamp(df['Time']))
+            print('length df after loading ',len(df))
 
     w.widget.setLevels(0, 10*np.mean(img_arr[0]))
     w.widget.setHistogramRange(0, 10*np.mean(img_arr[0]))
-    check_shutter()
-    try:
-        #print('stocazzo',img_arr.shape)
-        df1 = counting_loops(df)
-        df = df1
-    except Exception:
-        pass
+    # check_shutter()
+    print('length df after check ',len(df))
+    # try:
+    #     print('stocazzo',img_arr.shape)
+    #     df1 = counting_loops(df)
+    #     df = df1
+    #     print('length df after the try ',len(df))
+    # except Exception:
+    #     pass
 
 def counting_loops(df):
     # print(df['LTS_position'])
@@ -963,8 +975,11 @@ def open_folder():
     global loading_thread, fit_number, img_arr
     fit_number = 0
     loading_function(zipped=False)
+    print('loading done properly')
     scroll_data(0)
+    print('scroll done properly')
     plot_metadata()
+    print('plot done properly')
 
 
 def open_ZIP():
@@ -1367,8 +1382,14 @@ def scroll_data(i):
         w.notes_lbl.setText(df['notes'][i])
     except Exception:
         pass
+    print('columns in df ', df.columns)
+    print('columns in df[i] ',df.columns[i])
+    print('length of df ', len(df))
     for column in df.columns:
         if column != 'notes':
+            # print(df['delay'][i])
+            print(column)
+            print(df[column][i])
             col = df[column][i]
             if isinstance(col, numbers.Number):
                 b = format(col, '.3g')
@@ -1379,6 +1400,7 @@ def scroll_data(i):
     w.tableView_2.setModel(model)
     w.tableView_2.horizontalHeader().setStretchLastSection(True)
     current_frame = i
+    print('scroll data went well, current frame is', current_frame)
 
 set_colormap()
 
@@ -2156,7 +2178,8 @@ def group_data_by_delay():
     delay_list = df['LTS_position'].to_list()
 
     unique_delays, indices = np.unique(delay_list, return_inverse=True)
-
+    print('indices: ', indices)
+    print('unique delays: ', unique_delays)
     # use the indices to group the images by delay and compute their mean
     grouped_images = np.empty((len(unique_delays),) + imgON.shape[1:])
     for i in range(len(unique_delays)):
