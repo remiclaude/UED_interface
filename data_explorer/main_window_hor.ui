@@ -218,10 +218,10 @@
                 <string>ROI tools</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_5">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="roi_chkbx">
+                <item row="1" column="0">
+                 <widget class="QPushButton" name="pushButton_2">
                   <property name="text">
-                   <string>ROI</string>
+                   <string>Add</string>
                   </property>
                  </widget>
                 </item>
@@ -229,13 +229,6 @@
                  <widget class="QPushButton" name="pushButton_4">
                   <property name="text">
                    <string>Remove All</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QPushButton" name="pushButton_2">
-                  <property name="text">
-                   <string>Add</string>
                   </property>
                  </widget>
                 </item>
@@ -273,6 +266,13 @@
                   </property>
                  </widget>
                 </item>
+                <item row="4" column="0">
+                 <widget class="QCheckBox" name="checkBox_3">
+                  <property name="text">
+                   <string>Track evolution</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="2" column="1">
                  <widget class="QCheckBox" name="checkBox_2">
                   <property name="text">
@@ -280,10 +280,26 @@
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="0">
-                 <widget class="QCheckBox" name="checkBox_3">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="roi_chkbx">
                   <property name="text">
-                   <string>Track evolution</string>
+                   <string>ROI</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QGroupBox" name="groupBox_6">
+               <property name="title">
+                <string>Ruler</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_11">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label">
+                  <property name="text">
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -441,22 +457,6 @@
                   </property>
                   <property name="checked">
                    <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QGroupBox" name="groupBox_6">
-               <property name="title">
-                <string>Ruler</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_11">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label">
-                  <property name="text">
-                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -769,7 +769,7 @@
      <x>0</x>
      <y>0</y>
      <width>954</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -826,6 +826,16 @@
      <addaction name="action5x5"/>
      <addaction name="action10x10"/>
     </widget>
+    <widget class="QMenu" name="menuRemove_outliers">
+     <property name="title">
+      <string>Remove outliers</string>
+     </property>
+     <addaction name="action1"/>
+     <addaction name="action2"/>
+     <addaction name="action3"/>
+     <addaction name="action4"/>
+     <addaction name="action5"/>
+    </widget>
     <addaction name="actionRadial_Average"/>
     <addaction name="menuBin_Data"/>
     <addaction name="actionSlice_Data"/>
@@ -839,6 +849,8 @@
     <addaction name="separator"/>
     <addaction name="actionCalibrate_image"/>
     <addaction name="actionMeasure_distance"/>
+    <addaction name="separator"/>
+    <addaction name="menuRemove_outliers"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1166,6 +1178,41 @@
   <action name="actionRemove_hot_n_2">
    <property name="text">
     <string>Remove hot (n=2)</string>
+   </property>
+  </action>
+  <action name="actionRemove_outliers">
+   <property name="text">
+    <string>Remove outliers imgON</string>
+   </property>
+  </action>
+  <action name="actionRemove_outliers_imgOFF">
+   <property name="text">
+    <string>Remove outliers imgOFF</string>
+   </property>
+  </action>
+  <action name="action1">
+   <property name="text">
+    <string>1 SD</string>
+   </property>
+  </action>
+  <action name="action2">
+   <property name="text">
+    <string>2 SD</string>
+   </property>
+  </action>
+  <action name="action3">
+   <property name="text">
+    <string>2.5 SD</string>
+   </property>
+  </action>
+  <action name="action4">
+   <property name="text">
+    <string>3 SD</string>
+   </property>
+  </action>
+  <action name="action5">
+   <property name="text">
+    <string>4 SD</string>
    </property>
   </action>
  </widget>

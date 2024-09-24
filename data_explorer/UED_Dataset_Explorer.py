@@ -56,6 +56,7 @@ from scipy.special import wofz
 from numba_progress import ProgressBar
 import copy
 import matplotlib
+import matplotlib.pyplot as plt
 import pyqtgraph.console
 from PySide2.QtWidgets import QMessageBox as qmsg
 
@@ -505,7 +506,7 @@ class SPE_File(object):
         self._fid.close()
 
 def loading_function(zipped = True, dropped_path = None, file_list = None):
-    global starting_path, filename_opened, df, img_arr, imgON, imgOFF
+    global starting_path, filename_opened, df, img_arr, imgON, imgOFF, path
     df = 0
     path = starting_path
     chosen = False
@@ -679,7 +680,7 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
             df.rename(columns={"delay": "LTS_position"}, inplace=True)
             df['Delay_ps'] = df['LTS_position']*6.66666 
 
-            if 'Time_for_humans' not in df.columns:
+            if 'Time_for_humans' not in df.columns:   #C: what is time for humans
                 df['Time_for_humans'] = str(dtm.fromtimestamp(df['Time']))
             print('length df after loading ',len(df))
 
@@ -694,6 +695,92 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
     #     print('length df after the try ',len(df))
     # except Exception:
     #     pass
+
+
+def filter_outliers(n_SD):
+    """
+    FUNCTION TO REMOVE OUTLIERS
+    Calculate average, standard deviation, if data point is more than `threshold` n_SD away from the average, remove it.
+
+    The function operates on global variables imgON and imgOFF, which are arrays of 152x152 sub-arrays representing
+    pixel counts for different time steps.
+
+    The function modifies imgON and imgOFF in place.
+    
+    Filter outliers in a single dataset (img).
+
+    img is a n x 152 x 152 array (one row with 152 x 152 subarrays)
+    """
+    global imgON, imgOFF, path
+
+    # Calculate total counts for each sub-array
+    countsON = np.sum(imgON, axis = (1,2))
+    countsOFF = np.sum(imgOFF, axis = (1,2))
+
+    #number of data points in each set, used later to figure how many outliers are eliminated
+    elementsON = imgON.shape[0]
+    elementsOFF = imgOFF.shape[0]
+
+    # Calculate mean and standard deviation of the counts
+    mean_countsON, std_countsON  = np.mean(countsON), np.std(countsON)
+    mean_countsOFF, std_countsOFF = np.mean(countsOFF), np.std(countsOFF)
+
+    # Define thresholds
+    limit_up_on, limit_down_on = mean_countsON - (n_SD * std_countsON), mean_countsON + (n_SD * std_countsON)
+    limit_up_off, limit_down_off = mean_countsOFF - (n_SD * std_countsOFF), mean_countsOFF + (n_SD * std_countsOFF)
+    
+    #print(path)
+
+    #plot and save to file
+    # Plotting Counts ON
+    plt.figure(figsize=(12, 6))
+    plt.scatter(np.arange(elementsON), countsON, color='red')
+    plt.axhline(y=mean_countsON, color='black')  # Straight line to show where the average is
+    plt.axhline(y=limit_up_on, color='black', linestyle='--')
+    plt.axhline(y=limit_down_on, color='black', linestyle='--')
+    plt.title('Counts ON - Before Filtering')
+    plt.xlabel('Frame')
+    plt.ylabel('Counts')
+    plt.show()
+    #plt.savefig(os.path.join(os.path.dirname(path), 'countsON_outliers.png'), format='png')
+
+    # Plotting Counts OFF
+    plt.figure(figsize=(12, 6))
+    plt.scatter(np.arange(elementsOFF), countsOFF, color='red')
+    plt.axhline(y=mean_countsOFF, color='black')
+    plt.axhline(y=limit_up_off, color='black', linestyle='--')
+    plt.axhline(y=limit_down_off, color='black', linestyle='--')
+    plt.title('Counts OFF - Before Filtering')
+    plt.xlabel('Frame')
+    plt.ylabel('Counts')
+    plt.show()
+    #plt.savefig(os.path.join(os.path.dirname(path), 'countsOFF_outliers.png'), format='png')
+
+    indices_bad_ON = (countsON < mean_countsON + (n_SD * std_countsON)) & (countsON > mean_countsON - (n_SD * std_countsON))
+    indices_bad_OFF = (countsOFF < mean_countsOFF + (n_SD * std_countsOFF)) & (countsOFF > mean_countsOFF - (n_SD * std_countsOFF))
+    
+    imgON = imgON[indices_bad_ON,:,:]
+    imgOFF = imgOFF[indices_bad_OFF, :, :]
+    
+    # Print the number of outliers removed
+    num_outliersON = elementsON - imgON.shape[0]
+    num_outliersOFF = elementsOFF - imgOFF.shape[0]
+
+    print(f"Removed {num_outliersON} outliers from {elementsON} imgON.")
+    print(f"Removed {num_outliersOFF} outliers from {elementsOFF} imgOFF.")
+    
+    # Recalculate counts after filtering for visualization
+    countsON_filtered = np.sum(imgON, axis=(1, 2))
+    countsOFF_filtered = np.sum(imgOFF, axis=(1, 2))
+
+    return imgON, imgOFF
+
+#connect to correct buttons in QTdesigner    
+w.action1.triggered.connect(lambda: filter_outliers(1))
+w.action2.triggered.connect(lambda: filter_outliers(2))
+w.action3.triggered.connect(lambda: filter_outliers(2.5))
+w.action4.triggered.connect(lambda: filter_outliers(3))
+w.action5.triggered.connect(lambda: filter_outliers(4))
 
 def counting_loops(df):
     # print(df['LTS_position'])
@@ -715,8 +802,6 @@ def counting_loops(df):
             df['LTS_loop'] = count_arr+1
     return df
 
-
-
 #transform a sting of numbers separated by commas into a list of integers with ':' denoting a range of numbers
 def str_to_list(string):
     list = []
@@ -726,7 +811,6 @@ def str_to_list(string):
         else:
             list.append(int(i))
     return list
-
 
 def loops_selector():
     global df, img_arr,w
@@ -1001,7 +1085,6 @@ def rotate_array():
 
 # def get_quality():
 #     global imgON
-    
     
     
 w.pushButton_5.clicked.connect(rotate_array)
