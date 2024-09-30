@@ -711,7 +711,7 @@ def filter_outliers(n_SD):
 
     img is a n x 152 x 152 array (one row with 152 x 152 subarrays)
     """
-    global imgON, imgOFF, path
+    global imgON, imgOFF, path, df
 
     # Calculate total counts for each sub-array
     countsON = np.sum(imgON, axis = (1,2))
@@ -759,9 +759,16 @@ def filter_outliers(n_SD):
     indices_bad_ON = (countsON < mean_countsON + (n_SD * std_countsON)) & (countsON > mean_countsON - (n_SD * std_countsON))
     indices_bad_OFF = (countsOFF < mean_countsOFF + (n_SD * std_countsOFF)) & (countsOFF > mean_countsOFF - (n_SD * std_countsOFF))
     
-    imgON = imgON[indices_bad_ON,:,:]
-    imgOFF = imgOFF[indices_bad_OFF, :, :]
-    
+    #remove same outliers from both imgON and imgOFF: if one is bad for imgON but not for imgOFF, remove it
+    #from both anyways
+    indices_bad = indices_bad_ON * indices_bad_OFF    #indices_bad is an array of booleans
+    imgON = imgON[indices_bad,:,:]
+    imgOFF = imgOFF[indices_bad, :, :]
+
+    # Print the indices of removed data points
+    outlier_indices = np.where(~indices_bad)[0]      #tilde negates the array, only interested in first index       
+    print(f"Indices of removed outliers: {outlier_indices}")
+
     # Print the number of outliers removed
     num_outliersON = elementsON - imgON.shape[0]
     num_outliersOFF = elementsOFF - imgOFF.shape[0]
@@ -773,7 +780,12 @@ def filter_outliers(n_SD):
     countsON_filtered = np.sum(imgON, axis=(1, 2))
     countsOFF_filtered = np.sum(imgOFF, axis=(1, 2))
 
-    return imgON, imgOFF
+    #reshape pandas df to have proper length (img arrays are nx512x512, df has n rows)
+    #by dropping rows of appropriate indices
+    # Update the global dataframe `df` by removing rows corresponding to outlier indices
+    df = df.drop(index=outlier_indices)
+
+    return imgON, imgOFF, df
 
 #connect to correct buttons in QTdesigner    
 w.action1.triggered.connect(lambda: filter_outliers(1))
