@@ -57,6 +57,7 @@ from numba_progress import ProgressBar
 import copy
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import pyqtgraph.console
 from PySide2.QtWidgets import QMessageBox as qmsg
 
@@ -728,33 +729,6 @@ def filter_outliers(n_SD):
     # Define thresholds
     limit_up_on, limit_down_on = mean_countsON - (n_SD * std_countsON), mean_countsON + (n_SD * std_countsON)
     limit_up_off, limit_down_off = mean_countsOFF - (n_SD * std_countsOFF), mean_countsOFF + (n_SD * std_countsOFF)
-    
-    #print(path)
-
-    #plot and save to file
-    # Plotting Counts ON
-    plt.figure(figsize=(12, 6))
-    plt.scatter(np.arange(elementsON), countsON, color='red')
-    plt.axhline(y=mean_countsON, color='black')  # Straight line to show where the average is
-    plt.axhline(y=limit_up_on, color='black', linestyle='--')
-    plt.axhline(y=limit_down_on, color='black', linestyle='--')
-    plt.title('Counts ON - Before Filtering')
-    plt.xlabel('Frame')
-    plt.ylabel('Counts')
-    plt.show()
-    #plt.savefig(os.path.join(os.path.dirname(path), 'countsON_outliers.png'), format='png')
-
-    # Plotting Counts OFF
-    plt.figure(figsize=(12, 6))
-    plt.scatter(np.arange(elementsOFF), countsOFF, color='red')
-    plt.axhline(y=mean_countsOFF, color='black')
-    plt.axhline(y=limit_up_off, color='black', linestyle='--')
-    plt.axhline(y=limit_down_off, color='black', linestyle='--')
-    plt.title('Counts OFF - Before Filtering')
-    plt.xlabel('Frame')
-    plt.ylabel('Counts')
-    plt.show()
-    #plt.savefig(os.path.join(os.path.dirname(path), 'countsOFF_outliers.png'), format='png')
 
     indices_bad_ON = (countsON < mean_countsON + (n_SD * std_countsON)) & (countsON > mean_countsON - (n_SD * std_countsON))
     indices_bad_OFF = (countsOFF < mean_countsOFF + (n_SD * std_countsOFF)) & (countsOFF > mean_countsOFF - (n_SD * std_countsOFF))
@@ -772,16 +746,104 @@ def filter_outliers(n_SD):
     # Print the number of outliers removed
     num_outliersON = elementsON - imgON.shape[0]
     num_outliersOFF = elementsOFF - imgOFF.shape[0]
-
+    percent_removed_OFF = num_outliersOFF / elementsOFF * 100
+    percent_removed_ON = num_outliersON / elementsON * 100
     print(f"Removed {num_outliersON} outliers from {elementsON} imgON.")
     print(f"Removed {num_outliersOFF} outliers from {elementsOFF} imgOFF.")
+    """
+    # Subplot with 4 graphs: countsON, countsOFF, temperature, pressure as a function of time 
+    fig, (ax0, ax1, ax2, ax3) = plt.subplots(nrows=4, ncols=1, sharex=True, figsize=(6, 16.5))
+                                
+    # Plot Counts ON
+    ax0.scatter(np.arange(elementsON), countsON*1e-6, color='red', s = 26)
+    ax0.axhline(y=mean_countsON*1e-6, color='black')  # Straight line to show where the average is
+    ax0.axhline(y=limit_up_on*1e-6, color='black', linestyle='--')
+    ax0.axhline(y=limit_down_on*1e-6, color='black', linestyle='--')
+    #add text to say % of outliers removed
+    ax0.text(0.77, 0.91, f'{percent_removed_ON:.2f}% outliers', transform=ax0.transAxes, fontsize=10, color='black', bbox=dict(facecolor='none', edgecolor='black'))
+    ax0.set_title('Counts ON - Before Filtering')
+    ax0.set_ylabel(r'Counts $\times 10^{6}$')
     
+
+    # Plotting Counts OFF
+    ax1.scatter(np.arange(elementsOFF), countsOFF*1e-6, color='red', s = 26)
+    ax1.axhline(y=mean_countsOFF*1e-6, color='black')
+    ax1.axhline(y=limit_up_off*1e-6, color='black', linestyle='--')
+    ax1.axhline(y=limit_down_off*1e-6, color='black', linestyle='--')
+    #add text to say % of outliers removed
+    ax1.text(0.77, 0.91, f'{percent_removed_OFF:.2f}% outliers', transform=ax1.transAxes, fontsize=10, color='black', bbox=dict(facecolor='none', edgecolor='black'))
+    ax1.set_title('Counts OFF - Before Filtering')
+    ax1.set_ylabel(r'Counts $\times 10^{6}$')
+    
+    # Temperature as a function of time
+    temperature = df['Temperature_A']  # Assuming temperature data is in this column
+    ax2.yaxis.get_major_formatter().set_useOffset(False)  # Disable offset multiplier
+    ax2.plot(np.arange(len(temperature)), temperature, color='blue')
+    ax2.set_title('Temperature vs Time')
+    ax2.set_ylabel(r'Temperature (K) ')
+
+    # Pressure as a function of time
+    pressure = df['Pressure']  # Assuming pressure data is in this column
+    ax3.plot(np.arange(len(pressure)), pressure*1E8, color='green')
+    ax3.set_title('Pressure vs Time')
+    ax3.set_xlabel('Frame')  # Set shared x-axis label for all subplots
+    ax3.set_ylabel(r'Pressure (mBar) $\times 10^{-8}$')
+
+    # Tight layout for better spacing between subplots
+    plt.tight_layout()
+    plt.savefig(os.path.join(os.path.dirname(path), 'counts_outliers.png'), format='png')
+    plt.show()
+    """
+
+    # Adjust figure size and subplot spacing
+    fig, (ax0, ax1, ax2, ax3) = plt.subplots(nrows=4, ncols=1, sharex=True, figsize=(8, 18))
+
+    # Plot Counts ON
+    ax0.scatter(np.arange(elementsON), countsON*1e-6, color='red', s=26)
+    ax0.axhline(y=mean_countsON*1e-6, color='black')  # Average line
+    ax0.axhline(y=limit_up_on*1e-6, color='black', linestyle='--')  # Upper limit
+    ax0.axhline(y=limit_down_on*1e-6, color='black', linestyle='--')  # Lower limit
+    ax0.text(0.785, 0.915, f'{percent_removed_ON:.2f}% outliers', transform=ax0.transAxes, fontsize=12,
+            color='black', bbox=dict(facecolor='none', edgecolor='black', boxstyle='round,pad=0.3'))  # Text box
+    ax0.set_title('Counts ON - Before Filtering', fontsize=16)
+    ax0.set_ylabel(r'Counts $\times 10^{6}$', fontsize=14)
+
+    # Plot Counts OFF
+    ax1.scatter(np.arange(elementsOFF), countsOFF*1e-6, color='red', s=26)
+    ax1.axhline(y=mean_countsOFF*1e-6, color='black')
+    ax1.axhline(y=limit_up_off*1e-6, color='black', linestyle='--')
+    ax1.axhline(y=limit_down_off*1e-6, color='black', linestyle='--')
+    ax1.text(0.785, 0.915, f'{percent_removed_OFF:.2f}% outliers', transform=ax1.transAxes, fontsize=12,
+            color='black', bbox=dict(facecolor='none', edgecolor='black', boxstyle='round,pad=0.3'))
+    ax1.set_title('Counts OFF - Before Filtering', fontsize=16)
+    ax1.set_ylabel(r'Counts $\times 10^{6}$', fontsize=14)
+
+    # Temperature as a function of time
+    temperature = df['Temperature_A']
+    ax2.yaxis.get_major_formatter().set_useOffset(False)
+    ax2.plot(np.arange(len(temperature)), temperature, color='blue')
+    ax2.set_title('Temperature vs Time', fontsize=16)
+    ax2.set_ylabel(r'Temperature (K)', fontsize=14)
+
+    # Pressure as a function of time
+    pressure = df['Pressure']
+    ax3.plot(np.arange(len(pressure)), pressure*1E8, color='green')
+    ax3.set_title('Pressure vs Time', fontsize=16)
+    ax3.set_xlabel('Frame', fontsize=14)
+    ax3.set_ylabel(r'Pressure (mBar) $\times 10^{-8}$', fontsize=14)
+
+    # Adjust layout for better spacing
+    plt.tight_layout(pad=3.0)  # Increase padding between subplots
+    plt.subplots_adjust(bottom=0.05, top=0.95)  # Adjust top/bottom margins slightly
+
+    # Save and show the plot
+    plt.savefig('improved_counts_outliers.png', format='png', dpi=300)
+    plt.show()
+
     # Recalculate counts after filtering for visualization
     countsON_filtered = np.sum(imgON, axis=(1, 2))
     countsOFF_filtered = np.sum(imgOFF, axis=(1, 2))
 
-    #reshape pandas df to have proper length (img arrays are nx512x512, df has n rows)
-    #by dropping rows of appropriate indices
     # Update the global dataframe `df` by removing rows corresponding to outlier indices
     df = df.drop(index=outlier_indices)
 
