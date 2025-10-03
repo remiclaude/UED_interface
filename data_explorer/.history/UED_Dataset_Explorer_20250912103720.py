@@ -15,7 +15,7 @@ import glob
 # from inspect import CO_VARKEYWORDS
 import numbers
 
-
+from scipy import interpolate
 import sys
 import zipfile
 
@@ -56,6 +56,8 @@ from scipy.special import wofz
 from numba_progress import ProgressBar
 import copy
 import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import pyqtgraph.console
 from PySide2.QtWidgets import QMessageBox as qmsg
 
@@ -505,7 +507,7 @@ class SPE_File(object):
         self._fid.close()
 
 def loading_function(zipped = True, dropped_path = None, file_list = None):
-    global starting_path, filename_opened, df, img_arr, imgON, imgOFF
+    global starting_path, filename_opened, df, img_arr, imgON, imgOFF, path
     df = 0
     path = starting_path
     chosen = False
@@ -595,7 +597,7 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                             # attributes = list(dset.attrs.keys())
                             precision = np.int32
                             w.label_7.setText('Pump ON')
-                            
+                            # print(i)
                             if acquisition_mode == 'EXTG':
                                 precision = np.int32                     
                             img_list.append(np.array(dset[:], dtype=precision))
@@ -648,11 +650,12 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                 #convert list to array without increasing memory usage=
                 print('building img_arr')
                 imgON = np.stack(img_list)
+                print(imgON)
                 img_list = []
                 imgOFF = np.stack(img_list_2)
                 img_list_2 = []
                 img_arr = imgON
-                print('building done')
+                # print('building done')
             if is_Tiff:
                 try:
                     self_df = self_df.drop(
@@ -670,18 +673,18 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
                     show_error("No metadata found")
             df = self_df
             self_df = 0
-            print('length of arguement: ',len(df['LTS_position']))
-            print('lenght of df : ', len(df))
-            print(df['LTS_position'])
+            # print('length of arguement: ',len(df['LTS_position']))
+            # print('lenght of df : ', len(df))
+            # print(df['LTS_position'])
             # print('lenght of imgON:', len(imgON))
             # print('lenght of imgOFF:', len(imgOFF))
             
             df.rename(columns={"delay": "LTS_position"}, inplace=True)
             df['Delay_ps'] = df['LTS_position']*6.66666 
 
-            if 'Time_for_humans' not in df.columns:
+            if 'Time_for_humans' not in df.columns:   #C: what is time for humans
                 df['Time_for_humans'] = str(dtm.fromtimestamp(df['Time']))
-            print('length df after loading ',len(df))
+            # print('length df after loading ',len(df))
 
     w.widget.setLevels(0, 10*np.mean(img_arr[0]))
     w.widget.setHistogramRange(0, 10*np.mean(img_arr[0]))
@@ -694,6 +697,193 @@ def loading_function(zipped = True, dropped_path = None, file_list = None):
     #     print('length df after the try ',len(df))
     # except Exception:
     #     pass
+
+def shift_0order():
+    global imgON, imgOFF, roi, image_scale, image_offset, df
+    selected = roi.getArrayRegion(imgON[0], w.widget.getImageItem())
+    data_v = selected.sum(axis=0)
+    data_h = selected.sum(axis=1)
+    
+    x_data_v = (np.arange(len(data_v))+image_offset[0])*image_scale[0]
+    x_data_v = x_data_v + roi.pos()[0]
+    x_data_h = (np.arange(len(data_h))+image_offset[1])*image_scale[1]
+    x_data_h = x_data_h + roi.pos()[1]
+    ## define reference point 
+    print(fit_gauss(data_v, x_data_v))
+    print(fit_gauss(data_v, x_data_v).values['center'])
+    # print(fit_gauss(data_v, x_data_v)['center'])
+    print('len img OFF ',np.shape(imgOFF))
+    print('len img ON ',np.shape(imgON))
+    shiftON_before = []
+    shiftON_after = []
+    ref = np.array([fit_gauss(data_v, x_data_v).values['center'], fit_gauss(data_h, x_data_h).values['center']])
+    print(ref)
+    for i in range(1, np.size(imgON, 0)):
+        selected = roi.getArrayRegion(imgON[i], w.widget.getImageItem())
+        data_v = selected.sum(axis=0)
+        data_h = selected.sum(axis=1)
+        cON = np.array([fit_gauss(data_v, x_data_v).values['center'], fit_gauss(data_h, x_data_h).values['center']])
+        shift = cON-ref
+        shiftON_before.append(np.linalg.norm(shift))
+        f = interpolate.interp2d(np.arange(np.size(imgON, axis=1)), np.arange(np.size(imgON, axis=1)), imgON[i])
+        imgON[i, :, :] = f(np.arange(np.size(imgON, axis=1))+shift[1], np.arange(np.size(imgON, axis=2))+shift[0])
+        # get new shift after interpolation
+        selected = roi.getArrayRegion(imgON[i], w.widget.getImageItem())
+        data_v = selected.sum(axis=0)
+        data_h = selected.sum(axis=1)
+        cONafter = np.array([fit_gauss(data_v, x_data_v).values['center'], fit_gauss(data_h, x_data_h).values['center']])
+        shiftON_after.append(np.linalg.norm(cONafter-ref))
+    shiftOFF_before = []
+    shiftOFF_after = []
+    for i in range(1, np.size(imgOFF, 0)):
+        selected = roi.getArrayRegion(imgOFF[i], w.widget.getImageItem())
+        data_v = selected.sum(axis=0)
+        data_h = selected.sum(axis=1)
+        cOFF = np.array([fit_gauss(data_v, x_data_v).values['center'], fit_gauss(data_h, x_data_h).values['center']])
+        shift = cOFF-ref
+        shiftOFF_before.append(np.linalg.norm(shift))
+        # print('for ith=', i, ' image OFF, shift 0th order: ',shift)
+        f = interpolate.interp2d(np.arange(np.size(imgOFF, axis=1)), np.arange(np.size(imgOFF, axis=1)), imgOFF[i])
+        imgOFF[i, :, :] = f(np.arange(np.size(imgOFF, axis=1))+shift[1], np.arange(np.size(imgOFF, axis=2))+shift[0])
+        selected = roi.getArrayRegion(imgOFF[i], w.widget.getImageItem())
+        data_v = selected.sum(axis=0)
+        data_h = selected.sum(axis=1)
+        cOFFafter = np.array([fit_gauss(data_v, x_data_v).values['center'], fit_gauss(data_h, x_data_h).values['center']])
+        shiftOFF_after.append(np.linalg.norm(cOFFafter-ref))
+    x=np.arange(len(shiftOFF_after))
+    fig, axis = plt.subplots(2,1, figsize=(6, 12),layout='tight')
+    fig.suptitle(path[-11:-4])
+    axis[0].set_title('image OFF')
+    axis[0].plot(np.arange(len(shiftOFF_before)), shiftOFF_before, label='before interpolation')
+    axis[0].plot(np.arange(len(shiftOFF_after)), shiftOFF_after, label='after interpolation')
+    axis[0].set_xlabel('frame')
+    axis[0].set_ylabel('shift (px)')
+    axis[0].legend()
+    axis[1].set_title('image ON')
+    axis[1].plot(np.arange(len(shiftON_before)), shiftON_before, label='before interpolation')
+    axis[1].plot(np.arange(len(shiftON_after)), shiftON_after, label='after interpolation')
+    axis[1].set_xlabel('frame')
+    axis[1].set_ylabel('shift (px)')
+    axis[1].legend()
+    plt.show()
+    print('len img OFF ',np.shape(imgOFF))
+    print('len img ON ',np.shape(imgON))
+
+w.shift_0order_btn.clicked.connect(shift_0order)
+
+def filter_outliers(n_SD):
+    """
+    FUNCTION TO REMOVE OUTLIERS
+    Calculate average, standard deviation, if data point is more than `threshold` n_SD away from the average, remove it.
+
+    The function operates on global variables imgON and imgOFF, which are arrays of 152x152 sub-arrays representing
+    pixel counts for different time steps.
+
+    The function modifies imgON and imgOFF in place.
+    
+    Filter outliers in a single dataset (img).
+
+    img is a n x 152 x 152 array (one row with 152 x 152 subarrays)
+    """
+    global imgON, imgOFF, path, df
+
+    # Calculate total counts for each sub-array
+    countsON = np.sum(imgON, axis = (1,2))
+    countsOFF = np.sum(imgOFF, axis = (1,2))
+
+    #number of data points in each set, used later to figure how many outliers are eliminated
+    elementsON = imgON.shape[0]
+    elementsOFF = imgOFF.shape[0]
+
+    # Calculate mean and standard deviation of the counts
+    mean_countsON, std_countsON  = np.mean(countsON), np.std(countsON)
+    mean_countsOFF, std_countsOFF = np.mean(countsOFF), np.std(countsOFF)
+
+    # Define thresholds
+    limit_up_on, limit_down_on = mean_countsON - (n_SD * std_countsON), mean_countsON + (n_SD * std_countsON)
+    limit_up_off, limit_down_off = mean_countsOFF - (n_SD * std_countsOFF), mean_countsOFF + (n_SD * std_countsOFF)
+
+    indices_bad_ON = (countsON < mean_countsON + (n_SD * std_countsON)) & (countsON > mean_countsON - (n_SD * std_countsON))
+    indices_bad_OFF = (countsOFF < mean_countsOFF + (n_SD * std_countsOFF)) & (countsOFF > mean_countsOFF - (n_SD * std_countsOFF))
+    
+    #remove same outliers from both imgON and imgOFF: if one is bad for imgON but not for imgOFF, remove it
+    #from both anyways
+    indices_bad = indices_bad_ON * indices_bad_OFF    #indices_bad is an array of booleans
+    imgON = imgON[indices_bad,:,:]
+    imgOFF = imgOFF[indices_bad, :, :]
+
+    # Print the indices of removed data points
+    outlier_indices = np.where(~indices_bad)[0]      #tilde negates the array, only interested in first index       
+    print(f"Indices of removed outliers: {outlier_indices}")
+
+    # Print the number of outliers removed
+    num_outliersON = elementsON - imgON.shape[0]
+    num_outliersOFF = elementsOFF - imgOFF.shape[0]
+    percent_removed_OFF = num_outliersOFF / elementsOFF * 100
+    percent_removed_ON = num_outliersON / elementsON * 100
+    print(f"Removed {num_outliersON} outliers from {elementsON} imgON.")
+    print(f"Removed {num_outliersOFF} outliers from {elementsOFF} imgOFF.")
+
+    # Adjust figure size and subplot spacing
+    fig, (ax0, ax1, ax2, ax3) = plt.subplots(nrows=4, ncols=1, sharex=True, figsize=(8, 18))
+
+    # Plot Counts ON
+    ax0.scatter(np.arange(elementsON), countsON*1e-6, color='red', s=26)
+    ax0.axhline(y=mean_countsON*1e-6, color='black')  # Average line
+    ax0.axhline(y=limit_up_on*1e-6, color='black', linestyle='--')  # Upper limit
+    ax0.axhline(y=limit_down_on*1e-6, color='black', linestyle='--')  # Lower limit
+    ax0.text(0.785, 0.915, f'{percent_removed_ON:.2f}% outliers', transform=ax0.transAxes, fontsize=12,
+            color='black', bbox=dict(facecolor='none', edgecolor='black', boxstyle='round,pad=0.3'))  # Text box
+    ax0.set_title('Counts ON - Before Filtering', fontsize=16)
+    ax0.set_ylabel(r'Counts $\times 10^{6}$', fontsize=14)
+
+    # Plot Counts OFF
+    ax1.scatter(np.arange(elementsOFF), countsOFF*1e-6, color='red', s=26)
+    ax1.axhline(y=mean_countsOFF*1e-6, color='black')
+    ax1.axhline(y=limit_up_off*1e-6, color='black', linestyle='--')
+    ax1.axhline(y=limit_down_off*1e-6, color='black', linestyle='--')
+    ax1.text(0.785, 0.915, f'{percent_removed_OFF:.2f}% outliers', transform=ax1.transAxes, fontsize=12,
+            color='black', bbox=dict(facecolor='none', edgecolor='black', boxstyle='round,pad=0.3'))
+    ax1.set_title('Counts OFF - Before Filtering', fontsize=16)
+    ax1.set_ylabel(r'Counts $\times 10^{6}$', fontsize=14)
+
+    # Temperature as a function of time
+    temperature = df['Temperature_B']
+    ax2.yaxis.get_major_formatter().set_useOffset(False)
+    ax2.plot(np.arange(len(temperature)), temperature, color='blue')
+    ax2.set_title('Temperature vs Time', fontsize=16)
+    ax2.set_ylabel(r'Temperature (K)', fontsize=14)
+
+    # Pressure as a function of time
+    pressure = df['Pressure']
+    ax3.plot(np.arange(len(pressure)), pressure*1E8, color='green')
+    ax3.set_title('Pressure vs Time', fontsize=16)
+    ax3.set_xlabel('Frame', fontsize=14)
+    ax3.set_ylabel(r'Pressure (mBar) $\times 10^{-8}$', fontsize=14)
+
+    # Adjust layout for better spacing
+    plt.tight_layout(pad=3.0)  # Increase padding between subplots
+    plt.subplots_adjust(bottom=0.05, top=0.95)  # Adjust top/bottom margins slightly
+
+    # Save and show the plot
+    plt.savefig('improved_counts_outliers.png', format='png', dpi=300)
+    plt.show()
+
+    # Recalculate counts after filtering for visualization
+    # countsON_filtered = np.sum(imgON, axis=(1, 2))
+    # countsOFF_filtered = np.sum(imgOFF, axis=(1, 2))
+
+    # Update the global dataframe `df` by removing rows corresponding to outlier indices
+    df = df.drop(index=outlier_indices)
+
+    return imgON, imgOFF, df
+
+#connect to correct buttons in QTdesigner    
+w.action1.triggered.connect(lambda: filter_outliers(1))
+w.action2.triggered.connect(lambda: filter_outliers(2))
+w.action3.triggered.connect(lambda: filter_outliers(2.5))
+w.action4.triggered.connect(lambda: filter_outliers(3))
+w.action5.triggered.connect(lambda: filter_outliers(4))
 
 def counting_loops(df):
     # print(df['LTS_position'])
@@ -715,8 +905,6 @@ def counting_loops(df):
             df['LTS_loop'] = count_arr+1
     return df
 
-
-
 #transform a sting of numbers separated by commas into a list of integers with ':' denoting a range of numbers
 def str_to_list(string):
     list = []
@@ -726,7 +914,6 @@ def str_to_list(string):
         else:
             list.append(int(i))
     return list
-
 
 def loops_selector():
     global df, img_arr,w
@@ -1003,7 +1190,6 @@ def rotate_array():
 #     global imgON
     
     
-    
 w.pushButton_5.clicked.connect(rotate_array)
 # w.pushButton_6.clicked.connect(get_quality)
 
@@ -1107,12 +1293,12 @@ def roi_autoscale():
     maximum = np.max(selected)
     w.widget.setLevels(minimum, maximum)
     w.widget.setHistogramRange(minimum, maximum)
-    if colormap == 'Hot-Cold':
-        min = np.min(selected)
-        max = np.max(selected)
-        biggest = max if max > abs(min) else abs(min)
-        w.widget.setLevels(-biggest, biggest)
-        w.widget.setHistogramRange(-biggest, biggest)
+    # if colormap == 'Hot-Cold':
+    #     min = np.min(selected)
+    #     max = np.max(selected)
+    #     biggest = max if max > abs(min) else abs(min)
+    #     w.widget.setLevels(-biggest, biggest)
+    #     w.widget.setHistogramRange(-biggest, biggest)
 
 w.pushButton.clicked.connect(roi_autoscale)
 
@@ -1211,7 +1397,7 @@ def roi_update_plot(ro=0, index=0):
         plot_v_fit.setData(x_data_v, data_v_fit.best_fit, clear=True, pen=pg.mkPen('y', width=2))
         plot_h_fit.setData(x_data_h, data_h_fit.best_fit, clear=True, pen=pg.mkPen('y', width=2))
         pos_x = data_v_fit.values['center'] * np.cos(roi.angle() % 360 / 180 * np.pi) - data_h_fit.values['center'] * np.sin(roi.angle() % 360 / 180 * np.pi)
-        pos_y = data_v_fit.values['center'] * np.sin(roi.angle() % 360 / 180 * np.pi) + data_h_fit.values['center'] * np.cos(roi.angle() % 360 / 180 * np.pi)
+        pos_y = data_h_fit.values['center'] * np.sin(roi.angle() % 360 / 180 * np.pi) + data_h_fit.values['center'] * np.cos(roi.angle() % 360 / 180 * np.pi)
         fit_dict = {
             "frame": index + 1,
             "Height_OOP": data_v_fit.values['height'],
@@ -1389,14 +1575,8 @@ def scroll_data(i):
         w.notes_lbl.setText(df['notes'][i])
     except Exception:
         pass
-    print('columns in df ', df.columns)
-    print('columns in df[i] ',df.columns[i])
-    print('length of df ', len(df))
     for column in df.columns:
         if column != 'notes':
-            # print(df['delay'][i])
-            print(column)
-            print(df[column][i])
             col = df[column][i]
             if isinstance(col, numbers.Number):
                 b = format(col, '.3g')
@@ -1407,7 +1587,6 @@ def scroll_data(i):
     w.tableView_2.setModel(model)
     w.tableView_2.horizontalHeader().setStretchLastSection(True)
     current_frame = i
-    print('scroll data went well, current frame is', current_frame)
 
 set_colormap()
 
@@ -2167,6 +2346,8 @@ def export_Dataset_ON_OFF():
     # images_df['images']=img_arr.tolist()
     images_df['imagesON'] = list(imgON)
     images_df['imagesOFF'] = list(imgOFF)
+    print('exporting..')
+    print(list(imgON))
     global filename_opened, starting_path
     fname = QtWidgets.QFileDialog.getSaveFileName(w, "Save dataset to pickle", starting_path+'/'+filename_opened, "Pickle Files (*.pickle)")
     images_df.to_pickle(fname[0], compression={'method': 'gzip', 'compresslevel': 1, 'mtime': 1})
@@ -2174,7 +2355,6 @@ def export_Dataset_ON_OFF():
 w.actionDataset_ON_OFF.triggered.connect(export_Dataset_ON_OFF)
 
 # ---------------------------------TIME RESOLVED-----------------------------------------
-
 def group_data_by_delay():
     global df, img_arr, img_arr_2, imgON, imgOFF
     try:

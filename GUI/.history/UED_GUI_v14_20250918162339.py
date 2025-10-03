@@ -1,3 +1,7 @@
+#Needs to be run on python 3.12.8 !!!!!!!
+
+import sys
+sys.path.append("c:/Users/mainUED/Documents/GitHub/UED/GUI/")
 import os
 from ctypes import * 
 glaz = cdll.LoadLibrary("./DLLs/gladz/GlazLib.dll")  #noqa F405
@@ -50,6 +54,7 @@ import pyvisa
 from PyQt6.QtWidgets import * #noqa F403
 from PyQt6.QtGui import * #noqa F403
 # gdagfgvedrf
+from thorlabs_mc2000b import MC2000B, Blade
 
 from PyQt6.QtWidgets import QFileDialog
 from memory_profiler import profile
@@ -257,15 +262,16 @@ class DateAxisItem(AxisItem):
 
 DCU_IP = '169.254.254.1'
 ec = DEigerClient(DCU_IP)
-ec.setDetectorConfig('incident_energy', 30000)  # Ev
-# ec.setDetectorConfig('threshold_energy', 20000)
-ec.setDetectorConfig('trigger_mode', 'ints')
+# ec.setDetectorConfig('incident_energy', 40000)  # Ev
+# # ec.setDetectorConfig('threshold_energy', 20000)
+# ec.setDetectorConfig('trigger_mode', 'ints')
 
 
 url = "http://169.254.254.1/monitor/api/1.8.0/images/monitor"
 
-bkg_file = h5py.File(r"bkg\bkg.h5", 'r')
-bkg_img = np.array(bkg_file['data'], dtype=bool)
+# bkg_file = h5py.File(r"bkg\bkg.h5", 'r')
+# bkg_img = np.array(bkg_file['data'], dtype=bool)
+bkg_img = np.zeros((512,512))
 # inverted_bkg = (np.array(bkg_img, dtype=np.int32))*(-1)+1
 # inverted_bkg = inverted_bkg*0+1
 # print(inverted_bkg)
@@ -325,7 +331,7 @@ img_1.addItem(hLine, ignoreBounds=True)
 
 
 def mouseClicked(ev):
-    global col, row, img_pixel_value
+    global col, row, img_pixel_value, pixel_info_lbl
     p = QtCore.QPointF(ev.pos()[0], ev.pos()[1])
     data = img_1.image  # or use a self.data member
     nRows, nCols = data.shape
@@ -388,7 +394,7 @@ fit_chkbx = new_main_window.fit_chkbx
 lock_cross_chkbx = new_main_window.lock_cross_chkbx
 integral_label = new_main_window.integral_label
 integral_label.setFont(QFont("Arial", 16))
-fit_label = new_main_window.fit_label
+# fit_label = new_main_window.fit_label
 
 # energy_scan_btn = QtGui.QPushButton("Energy scan")
 
@@ -436,7 +442,7 @@ def update_run_number():
 read_run_number()
 
 def ROIupdatePlot():
-    global img_1, roi, img_arr, p2, integral_label, fit_label
+    global img_1, roi, img_arr, p2, integral_label
     if ROI_chkbx.isChecked():
         img_1.addItem(roi)
         selected = roi.getArrayRegion(img_arr, img_1.getImageItem())
@@ -455,12 +461,12 @@ def ROIupdatePlot():
                 pass
             window_cross_v_plt_fit.setData(x_data_v, data_v_fit.best_fit, clear=True, pen=pg.mkPen('y', width=2))
             window_cross_h_plt_fit.setData(data_h_fit.best_fit, x_data_h, clear=True, pen=pg.mkPen('y', width=2))
-            fit_label.setText("Height: "+format(int(data_v_fit.values['height']), '.3g') + "\nCenter X:" + format(format(data_v_fit.values['center'], '5.2f')) + "\nCenter Y:"+format(format(data_h_fit.values['center'], '5.2f'))+"\nFWHM X:"+format(
-                format(data_v_fit.values['fwhm'], '5.2f')) + "\nFWHM Y:"+format(format(data_h_fit.values['fwhm'], '5.2f')) + '\nEccentricity: '+format(data_h_fit.values['fwhm']/data_v_fit.values['fwhm'], '5.3f'))
+            # fit_label.setText("Height: "+format(int(data_v_fit.values['height']), '.3g') + "\nCenter X:" + format(format(data_v_fit.values['center'], '5.2f')) + "\nCenter Y:"+format(format(data_h_fit.values['center'], '5.2f'))+"\nFWHM X:"+format(
+                # format(data_v_fit.values['fwhm'], '5.2f')) + "\nFWHM Y:"+format(format(data_h_fit.values['fwhm'], '5.2f')) + '\nEccentricity: '+format(data_h_fit.values['fwhm']/data_v_fit.values['fwhm'], '5.3f'))
         else:
             window_cross_h_plt_fit.clear()
             window_cross_v_plt_fit.clear()
-            fit_label.setText("")
+            # fit_label.setText("")
         window_cross_v_plt.setData(
             x_data_v, data_v, clear=True, pen=pg.mkPen('m', width=2))
 
@@ -506,7 +512,7 @@ def autoscale_roi_diff():
 roi.sigRegionChanged.connect(update_roi_diff)
 new_main_window.pushButton_15.clicked.connect(autoscale_roi_diff)
 def plot_func():
-    global img_arr, img_arr_old, allow_drawing, row, col, img_pixel_value, img_arr_2, roi
+    global img_arr, img_arr_old, allow_drawing, row, col, img_pixel_value, img_arr_2, roi, pixel_info_lbl
     if allow_drawing:
         img_pixel_value = img_arr[row, col]
         pixel_info_lbl.setText("X = %3d \nY = %3d \nI = %d" % (col, row, img_pixel_value))
@@ -563,8 +569,8 @@ class AThread(QThread):
 thread = AThread()
 thread.updated.connect(plot_func)
 img_arr_old = img_arr.copy()*0.
-folderpath = os.getcwd()
-
+# folderpath = os.getcwd()
+folderpath = r'D:\UED_measurements'
 # folderpath = r"C:/Users/paull/OneDrive - epfl.ch/Documents/ued_test_files/test_01"
 new_main_window.folder_path_entry.setText(folderpath)
 
@@ -1236,7 +1242,7 @@ image_acquired = 0
 
 quadro_nimages = 1
 
-quadro_incidentenergy = 30000
+quadro_incidentenergy = 40000
 
 def set_quadro_settings():
     global quadro_nimages, exposure, quadro_frametime, quadro_incidentenergy
@@ -1258,6 +1264,7 @@ def set_quadro_settings():
     if trigger_mode == 'extg':
         ec.setDetectorConfig('extg_mode', 'double')  # this is to set pump probe
         ec.setDetectorConfig('countrate_correction_applied', False)
+        set_GladzPD() ## so that the photodiode acquire the same window as quadro
     ec.setMonitorConfig('mode', new_main_window.comboBox_2.currentText().lower())
     ec.sendFileWriterCommand('clear')
     ec.setMonitorConfig('buffer_size', int(new_main_window.spinBox_2.value()))
@@ -1487,7 +1494,7 @@ def sort_imgs(hf):
     gladz_plot(data_diode[0:16])
     print('data from the galz : ', data_diode[0:10])
     # print(np.mean(data_diode[0::2]), np.mean(data_diode[1::2]))
-    if data_diode[1] > 1.5e3:  # if odd are pump on
+    if data_diode[1] > data_diode[0]:  # if odd are pump on
         # print('pump is on in odd')
         # print(even_roi-odd_roi)
         img_arr = np.flipud(np.rot90(odd))
@@ -1655,11 +1662,15 @@ class Scan_Thread(QThread):
         start_pos = int(scan_start_entry.text())
         end_pos = int(scan_stop_entry.text())
         stepsize = int(scan_step_entry.text())
+        print(scan_axis)
         SimStep_move_abs_rocking(str(scan_axis), start_pos-50)
+        print('I moved to abs')
         time.sleep(0.5)
         SimStep_move_abs_rocking(str(scan_axis), start_pos)
+        print('I moved to abs a second time')
         time.sleep(2)
         for i in np.arange(int(start_pos), int(end_pos), int(stepsize)):
+            print(' I am in the loop pi doop')
             self.update_lbl.emit(i)
             rock_acquire_image(i)
             self.updated.emit(1)
@@ -1733,7 +1744,7 @@ scan_start_btn.clicked.connect(SimStep_rocking_curve_start)
 scan_stop_btn.clicked.connect(SimStep_rocking_curve_stop)
 
 
-ser_lakeshore = serial.Serial()
+ser_lakeshore = serial.Serial()       #must be something related to temperature sensor ?
 ser_lakeshore.port = 'COM9'
 ser_lakeshore.baudrate = 57600
 ser_lakeshore.timeout = 0
@@ -2026,6 +2037,22 @@ def pressure_log():
     global pressure_list
     logfile = open(folderpath_pressure+"\\"+"pressure_log.txt", "a+")
     logfile.write("%014.3f\t%.3e\n" % (time.time(), pressure_list[-1]))
+
+
+chopper = MC2000B('COM12')
+# chopper = 0
+
+def chopper_start():
+    chopper.enable = True
+    
+def chopper_stop():
+    chopper.enable = False
+    
+    
+
+new_main_window.chopper_start_btn.clicked.connect(chopper_start)
+new_main_window.chopper_stop_btn.clicked.connect(chopper_stop)
+chopper_safety_box = new_main_window.chopper_safety_box 
 
 
 shutter_connect_btn = new_main_window.shutter_connect_btn
@@ -2406,6 +2433,12 @@ time_saving = 0
 number_of_acquired_images = 0
 total_time = 0
 
+def check_chopper():
+    if chopper.refoutfreq == 0:
+        chopper.enable=False
+        chopper.enable=True
+    
+
 class LTS_Scan_Thread(QThread):
     updated = QtCore.pyqtSignal(int)
     finished = QtCore.pyqtSignal(int)
@@ -2454,7 +2487,9 @@ class LTS_Scan_Thread(QThread):
             current_loop = loop
             loop_number = format(time.time(), "014.3f")
             for delay in all_delays:
-                print('start')
+                if chopper_safety_box.isChecked():
+                    check_chopper()
+                # print('start')
                 t_s = time.time()
                 move_abs_LTS(delay)
                 while True:
@@ -2467,9 +2502,9 @@ class LTS_Scan_Thread(QThread):
                 time_moving_stage = time_moving_stage + time.time() - t_s
                 self.acquiring.emit(1)
                 LTS_acquire_img()
-                print('The image was acquired')
+                # print('The image was acquired')
                 LTS_append_loop_images()
-                print('the image was appended')
+                # print('the image was appended')
                 if pump_on_off_chkbx.isChecked():
                     open_SHUTTER()
                     self.shutter_on.emit(1)
@@ -2482,7 +2517,7 @@ class LTS_Scan_Thread(QThread):
                 # LTS_set_prog()
                 prog = prog + 1
                 self.updated.emit(prog)
-                print('progress bar was updated')
+                # print('progress bar was updated')
                 number_of_acquired_images = number_of_acquired_images + 1
             ec.sendFileWriterCommand('clear')
             generate_master_file_h5()
@@ -2659,28 +2694,28 @@ def LTS_acquire_img():
             save_image_h5(filename, img_arr)
     elif acquisition_mode == 'EXTG':
         t0 = time.time()
-        print('creation of filenumber')
+        # print('creation of filenumber')
         filenumber = int(quadro_namenumber_entry.text())
         filename = str(quadro_namepattern_entry.text()) + format(filenumber, "05")
-        print('set filename in hte QUADRO')
+        # print('set filename in hte QUADRO')
         ec.setFileWriterConfig('name_pattern', filename)
         if simulator == 0:
-            print('TIRG the pulser')
+            # print('TIRG the pulser')
             pulser.channel[2].set_source('TRIG')
             t_a = time.time()
-            print('glaz start measurement')
+            # print('glaz start measurement')
             glaz.startMeasurement()
-            print('arm the quadro')
+            # print('arm the quadro')
             # time.sleep(0.1)
             ec.sendDetectorCommand('arm')
-            print('Off trigger the pulser')
+            # print('Off trigger the pulser')
             pulser.channel[2].set_source('OFF')
-            print('look for the file')
+            # print('look for the file')
             a = ec.fileWriterFiles()
             # print(a['value'])
             # print(filename+'_data_000001.h5')
             # while a['value'] == None or a['value'] == [] or a['value'][0] != filename+'_data_000001.h5':
-            print('enter the while loop')
+            # print('enter the while loop')
             while filename+'_data_000001.h5' not in a['value']:
                 a = ec.fileWriterFiles()
                 # print(a['value'])
@@ -2689,16 +2724,16 @@ def LTS_acquire_img():
                     print('RESET THE TRIGGER')
                     pulser.channel[2].set_source('TRIG')
                     pulser.channel[2].set_source('OFF')
-            print('while loop exited')
+            # print('while loop exited')
             time_acquiring += time.time() - t_a
             print('acquiring time: ', time.time() - t_a)
-            print('disarm the quadro')
+            # print('disarm the quadro')
             ec.sendDetectorCommand('disarm')
-            print('change the data number')
+            # print('change the data number')
             quadro_namenumber_entry.setText(str(filenumber + 1))
-            print('set the pulser to TRIG')
+            # print('set the pulser to TRIG')
             pulser.channel[2].set_source('TRIG')
-            print('extract the h5 file')
+            # print('extract the h5 file')
             url = 'http://169.254.254.1/data/'+filename+"_data_000001.h5"
             extract = True
             while extract:
@@ -2709,11 +2744,11 @@ def LTS_acquire_img():
                     print('DAMN THERE WAS AN ISSUE WHILE EXTRACTING THE DATA')
             # hf = h5py.File(io.BytesIO(requests.get(url).content), "r+")
             t_sort = time.time()
-            print('start sorting the image')
+            # print('start sorting the image')
             sort_imgs(hf)
             time_sorting += time.time() - t_sort
             t_saving = time.time()
-            print('save the image')
+            # print('save the image')
             save_image_h5(filename, img_arr, img_arr_2, data_diode)
             time_saving += time.time() - t_saving
         else:
@@ -2859,12 +2894,12 @@ attocube_encoder_raw = 0
 attocube_encoder_deg = 0
 attocube_encoder_ref = 0
 
-if simulator == 0:
-    from pylablib.devices import Attocube
-    atc1 = Attocube.ANC300("COM7")
-    new_main_window.volt_LCD.display(atc1.get_voltage(1))
-    new_main_window.freq_LCD.display(atc1.get_frequency(1))
-    atc1.enable_axis(1, mode='stp')
+# if simulator == 0:
+#     from pylablib.devices import Attocube
+#     atc1 = Attocube.ANC300("COM7")
+#     new_main_window.volt_LCD.display(atc1.get_voltage(1))
+#     new_main_window.freq_LCD.display(atc1.get_frequency(1))
+#     atc1.enable_axis(1, mode='stp')
 
 
 def attocube_get_capacity():
@@ -2964,77 +2999,77 @@ new_main_window.pushButton_4.clicked.connect(attocube_encoder_reset_ref)
 
 ################ LEAK VALVE ########################
 
-new_main_window.actionLeak_valve.triggered.connect(window_leakvalve.show)
+# new_main_window.actionLeak_valve.triggered.connect(window_leakvalve.show)
 
-ser_leak = serial.Serial()
-ser_leak.port = 'COM11'
-ser_leak.baudrate = 9600
-ser_leak.timeout = 0
-ser_leak.parity = serial.PARITY_NONE
-ser_leak.bytesize = 8
-ser_leak.stopbits = 1
-ser_leak.xonxoff = 0
+# ser_leak = serial.Serial()
+# ser_leak.port = 'COM11'
+# ser_leak.baudrate = 9600
+# ser_leak.timeout = 0
+# ser_leak.parity = serial.PARITY_NONE
+# ser_leak.bytesize = 8
+# ser_leak.stopbits = 1
+# ser_leak.xonxoff = 0
 
-if simulator == 0:
-    ser_leak.open()
+# # if simulator == 0:
+# #     ser_leak.open()
 
-leakvalve_position = 0
-window_leakvalve.pos_label.setText("0")
-
-
-def move_valve(dir):
-    global leakvalve_position
-    steps = int(window_leakvalve.steps_entry.text())
-    if dir > 0:
-        command = f"O{steps}#"
-        ser_leak.write(command.encode())
-        time.sleep(0.05)
-        ser_leak.read(100)
-        leakvalve_position = leakvalve_position + steps
-
-    else:
-        command = f"C{steps}#"
-        ser_leak.write(command.encode())
-        time.sleep(0.05)
-        ser_leak.read(100)
-        leakvalve_position = leakvalve_position - steps
-    window_leakvalve.pos_label.setText(f"{leakvalve_position}")
+# leakvalve_position = 0
+# window_leakvalve.pos_label.setText("0")
 
 
-def set_leak_speed():
-    speed = int(window_leakvalve.speed_entry.text())
-    delay = int(speed/2)
-    command = f"S{delay}#"
-    ser_leak.write(command.encode())
-    time.sleep(0.05)
-    ser_leak.read(100)
+# def move_valve(dir):
+#     global leakvalve_position
+#     steps = int(window_leakvalve.steps_entry.text())
+#     if dir > 0:
+#         command = f"O{steps}#"
+#         ser_leak.write(command.encode())
+#         time.sleep(0.05)
+#         ser_leak.read(100)
+#         leakvalve_position = leakvalve_position + steps
 
-if simulator == 0:
-    set_leak_speed()
-
-
-def leakvalve_set_sero():
-    global leakvalve_position
-    leakvalve_position = 0
-    window_leakvalve.pos_label.setText(f"{0}")
-
-
-def leakvalve_close_full():
-    global leakvalve_position
-    if leakvalve_position > 0:
-        command = f"C{leakvalve_position}#"
-        ser_leak.write(command.encode())
-        time.sleep(0.05)
-        ser_leak.read(100)
-    leakvalve_position = 0
-    window_leakvalve.pos_label.setText(f"{0}")
+#     else:
+#         command = f"C{steps}#"
+#         ser_leak.write(command.encode())
+#         time.sleep(0.05)
+#         ser_leak.read(100)
+#         leakvalve_position = leakvalve_position - steps
+#     window_leakvalve.pos_label.setText(f"{leakvalve_position}")
 
 
-window_leakvalve.speed_entry.editingFinished.connect(set_leak_speed)
-window_leakvalve.open_btn.clicked.connect(partial(move_valve, 1))
-window_leakvalve.close_btn.clicked.connect(partial(move_valve, -1))
-window_leakvalve.zero_btn.clicked.connect(leakvalve_set_sero)
-window_leakvalve.close_full_btn.clicked.connect(leakvalve_close_full)
+# def set_leak_speed():
+#     speed = int(window_leakvalve.speed_entry.text())
+#     delay = int(speed/2)
+#     command = f"S{delay}#"
+#     ser_leak.write(command.encode())
+#     time.sleep(0.05)
+#     ser_leak.read(100)
+
+# if simulator == 0:
+#     set_leak_speed()
+
+
+# def leakvalve_set_sero():
+#     global leakvalve_position
+#     leakvalve_position = 0
+#     window_leakvalve.pos_label.setText(f"{0}")
+
+
+# def leakvalve_close_full():
+#     global leakvalve_position
+#     if leakvalve_position > 0:
+#         command = f"C{leakvalve_position}#"
+#         ser_leak.write(command.encode())
+#         time.sleep(0.05)
+#         ser_leak.read(100)
+#     leakvalve_position = 0
+#     window_leakvalve.pos_label.setText(f"{0}")
+
+
+# window_leakvalve.speed_entry.editingFinished.connect(set_leak_speed)
+# window_leakvalve.open_btn.clicked.connect(partial(move_valve, 1))
+# window_leakvalve.close_btn.clicked.connect(partial(move_valve, -1))
+# window_leakvalve.zero_btn.clicked.connect(leakvalve_set_sero)
+# window_leakvalve.close_full_btn.clicked.connect(leakvalve_close_full)
 
 
 #############################################################################
@@ -3280,6 +3315,7 @@ class pid_thread_class(QThread):
         P = float(win_sol.lineEdit_4.text())
         Int = float(win_sol.lineEdit_5.text()) #noqa E741
         D = float(win_sol.lineEdit_6.text())
+        print('PID = ', P, Int, D)
         if pid_copy == 0:
             pid = PID(P, Int, D, output_limits=(1, 100), setpoint=float(win_sol.lineEdit_3.text()), sample_time=0.5)
             pid_copy = copy.deepcopy(pid)
@@ -3318,13 +3354,15 @@ class sol_ramp_thread(QThread):
 
     def run(self):
         global cur_pwr, pid_copy, rate, lakeshore_df
-        # rate = float(win_sol.lineEdit_2.text())
+        rate = float(win_sol.lineEdit_2.text())
         # startpoint_T = temperature_A[-1]
+        print('I AM RUNING')
         startpoint_T = float(win_sol.lineEdit_3.text())
         v = lakeshore_df['temperature_A'].iloc[-1]
         P = float(win_sol.lineEdit_4.text())
         Int = float(win_sol.lineEdit_5.text()) #noqa E741
         D = float(win_sol.lineEdit_6.text())
+        print('PID = ', P, Int, D)
         # started = 0
         high = cur_pwr*1.1
         low = cur_pwr*0.9
@@ -3336,15 +3374,16 @@ class sol_ramp_thread(QThread):
                 low = low-t
             else:
                 low = 1
-            if (high < 100):
+            if (high < 50):
                 high = high+t
             else:
-                high = 100
+                high = 50
             win_sol.label_10.setText(format(startpoint_T, ".2f"))
             startpoint_T = startpoint_T+rate/60
             pid.setpoint = (startpoint_T)
             pid.output_limits = (low, high)
             control = int(pid(v))
+            print('control = ', control)
             v = lakeshore_df['temperature_A'].iloc[-1]
             sol_set_power(control)
             pid_copy = copy.deepcopy(pid)
@@ -3461,8 +3500,9 @@ class FourChannelPulser:
 if simulator == 0:
     rm = pyvisa.ResourceManager()
     resourceList = rm.list_resources()
+    print(resourceList)
 
-    index = 5
+    index = 13 #sept 2025: used to be 6, changed pulser box and is now 9
     pulser = A7_pulser(resourceList[index])
 else:
     pulser = FourChannelPulser()
@@ -3501,7 +3541,7 @@ def initialize_Gladz():
     # glaz = CDLL(".\DLLs\gladz\GlazLib.dll")  # loads the C library
     # glaz = CDLL("C:/Users/mainUED/Documents/GitHub/wetlab-software/lib_UED/glaz_API/GlazAPI_9_15/GlazAPI_9_15/GlazLib/win64/GlazLib.dll")  # loads the C library
     # script_path = initial_path + '\DLLs\SYBP006010006_glazPD_UED.gsc'
-    script_path = initial_path + '\DLLs\SYBP006010022_glazPD_UED.gsc'
+    script_path = initial_path + r'\DLLs\SYBP006010022_glazPD_UED.gsc'
     #encode script path to bytes
     script = c_char_p(bytes(script_path, 'utf-8'))
     # script = c_char_p(b".\Dlls\SYBP006010006_glazPD_UED.gsc")
@@ -3619,3 +3659,4 @@ app.exec()
 t_pressure.cancel()
 t_temperature.cancel()
 new_main_window.close()
+

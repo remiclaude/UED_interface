@@ -1743,16 +1743,12 @@ axis_th_rbtn.toggled.connect(select_scan_axis)
 scan_start_btn.clicked.connect(SimStep_rocking_curve_start)
 scan_stop_btn.clicked.connect(SimStep_rocking_curve_stop)
 
+import serial.tools.list_ports
 
-import serial
-
-try:
-    ser = serial.Serial('COM9', 9600, timeout=1)
-    print("✅ COM9 opened successfully!")
-    ser.close()
-except serial.SerialException as e:
-    print(f"❌ Could not open COM9: {e}")
-    
+ports = serial.tools.list_ports.comports()
+print("Available COM ports:")
+for port in ports:
+    print(f" - {port.device}")
 
 
 ser_lakeshore = serial.Serial()       #must be something related to temperature sensor ?

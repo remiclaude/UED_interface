@@ -1744,17 +1744,6 @@ scan_start_btn.clicked.connect(SimStep_rocking_curve_start)
 scan_stop_btn.clicked.connect(SimStep_rocking_curve_stop)
 
 
-import serial
-
-try:
-    ser = serial.Serial('COM9', 9600, timeout=1)
-    print("✅ COM9 opened successfully!")
-    ser.close()
-except serial.SerialException as e:
-    print(f"❌ Could not open COM9: {e}")
-    
-
-
 ser_lakeshore = serial.Serial()       #must be something related to temperature sensor ?
 ser_lakeshore.port = 'COM9'
 ser_lakeshore.baudrate = 57600
@@ -3511,9 +3500,8 @@ class FourChannelPulser:
 if simulator == 0:
     rm = pyvisa.ResourceManager()
     resourceList = rm.list_resources()
-    print(resourceList)
 
-    index = 12 #sept 2025: used to be 6, changed pulser box and is now 12
+    index = 6
     pulser = A7_pulser(resourceList[index])
 else:
     pulser = FourChannelPulser()
@@ -3552,8 +3540,7 @@ def initialize_Gladz():
     # glaz = CDLL(".\DLLs\gladz\GlazLib.dll")  # loads the C library
     # glaz = CDLL("C:/Users/mainUED/Documents/GitHub/wetlab-software/lib_UED/glaz_API/GlazAPI_9_15/GlazAPI_9_15/GlazLib/win64/GlazLib.dll")  # loads the C library
     # script_path = initial_path + '\DLLs\SYBP006010006_glazPD_UED.gsc'
-    #script_path = initial_path + r'\DLLs\SYBP006010022_glazPD_UED.gsc'
-    script_path = initial_path + r'\DLLs\trial.gsc'
+    script_path = initial_path + r'\DLLs\SYBP006010022_glazPD_UED.gsc'
     #encode script path to bytes
     script = c_char_p(bytes(script_path, 'utf-8'))
     # script = c_char_p(b".\Dlls\SYBP006010006_glazPD_UED.gsc")
@@ -3587,8 +3574,6 @@ def set_GladzPD():
         
 def Gladz_data():
     global glaz
-    #res = glaz.runMeasurement()  #chiara
-    #print("runMeasurement result:", res)  #chiara
     data = np.ndarray(scan_cnt, dtype=np.double)
     data_ctype = data.ctypes.data_as(POINTER(c_double))
     glaz.getPDValues.argtypes = [c_int, c_int, POINTER(c_int), POINTER(c_double)]

@@ -2351,7 +2351,6 @@ def export_Dataset_ON_OFF():
     global filename_opened, starting_path
     fname = QtWidgets.QFileDialog.getSaveFileName(w, "Save dataset to pickle", starting_path+'/'+filename_opened, "Pickle Files (*.pickle)")
     images_df.to_pickle(fname[0], compression={'method': 'gzip', 'compresslevel': 1, 'mtime': 1})
-    print('exporting done')
 
 w.actionDataset_ON_OFF.triggered.connect(export_Dataset_ON_OFF)
 

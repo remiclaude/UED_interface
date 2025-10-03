@@ -22,7 +22,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(954, 822)
         MainWindow.setAcceptDrops(True)
         icon = QIcon()
-        icon.addFile(u"main_window.ico", QSize(), QIcon.Normal, QIcon.On)
+        icon.addFile(u"../../../../../../.designer/backup/main_window.ico", QSize(), QIcon.Normal, QIcon.On)
         MainWindow.setWindowIcon(icon)
         self.actionOpen_TIFFs = QAction(MainWindow)
         self.actionOpen_TIFFs.setObjectName(u"actionOpen_TIFFs")
@@ -140,6 +140,22 @@ class Ui_MainWindow(object):
         self.actionGaussian_smooth_ON_OFF.setObjectName(u"actionGaussian_smooth_ON_OFF")
         self.actionON_OFF = QAction(MainWindow)
         self.actionON_OFF.setObjectName(u"actionON_OFF")
+        self.actionRemove_hot_n_2 = QAction(MainWindow)
+        self.actionRemove_hot_n_2.setObjectName(u"actionRemove_hot_n_2")
+        self.actionRemove_outliers = QAction(MainWindow)
+        self.actionRemove_outliers.setObjectName(u"actionRemove_outliers")
+        self.actionRemove_outliers_imgOFF = QAction(MainWindow)
+        self.actionRemove_outliers_imgOFF.setObjectName(u"actionRemove_outliers_imgOFF")
+        self.action1 = QAction(MainWindow)
+        self.action1.setObjectName(u"action1")
+        self.action2 = QAction(MainWindow)
+        self.action2.setObjectName(u"action2")
+        self.action3 = QAction(MainWindow)
+        self.action3.setObjectName(u"action3")
+        self.action4 = QAction(MainWindow)
+        self.action4.setObjectName(u"action4")
+        self.action5 = QAction(MainWindow)
+        self.action5.setObjectName(u"action5")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_3 = QHBoxLayout(self.centralwidget)
@@ -233,20 +249,15 @@ class Ui_MainWindow(object):
         self.groupBox_3.setObjectName(u"groupBox_3")
         self.gridLayout_5 = QGridLayout(self.groupBox_3)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
-        self.roi_chkbx = QCheckBox(self.groupBox_3)
-        self.roi_chkbx.setObjectName(u"roi_chkbx")
+        self.pushButton_2 = QPushButton(self.groupBox_3)
+        self.pushButton_2.setObjectName(u"pushButton_2")
 
-        self.gridLayout_5.addWidget(self.roi_chkbx, 0, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.pushButton_2, 1, 0, 1, 1)
 
         self.pushButton_4 = QPushButton(self.groupBox_3)
         self.pushButton_4.setObjectName(u"pushButton_4")
 
         self.gridLayout_5.addWidget(self.pushButton_4, 2, 0, 1, 1)
-
-        self.pushButton_2 = QPushButton(self.groupBox_3)
-        self.pushButton_2.setObjectName(u"pushButton_2")
-
-        self.gridLayout_5.addWidget(self.pushButton_2, 1, 0, 1, 1)
 
         self.pushButton_3 = QPushButton(self.groupBox_3)
         self.pushButton_3.setObjectName(u"pushButton_3")
@@ -267,31 +278,60 @@ class Ui_MainWindow(object):
 
         self.gridLayout_5.addWidget(self.label_2, 3, 0, 1, 2)
 
-        self.checkBox_2 = QCheckBox(self.groupBox_3)
-        self.checkBox_2.setObjectName(u"checkBox_2")
-
-        self.gridLayout_5.addWidget(self.checkBox_2, 2, 1, 1, 1)
-
         self.checkBox_3 = QCheckBox(self.groupBox_3)
         self.checkBox_3.setObjectName(u"checkBox_3")
 
         self.gridLayout_5.addWidget(self.checkBox_3, 4, 0, 1, 1)
 
+        self.checkBox_2 = QCheckBox(self.groupBox_3)
+        self.checkBox_2.setObjectName(u"checkBox_2")
+
+        self.gridLayout_5.addWidget(self.checkBox_2, 2, 1, 1, 1)
+
+        self.roi_chkbx = QCheckBox(self.groupBox_3)
+        self.roi_chkbx.setObjectName(u"roi_chkbx")
+
+        self.gridLayout_5.addWidget(self.roi_chkbx, 0, 0, 1, 1)
+
 
         self.gridLayout_4.addWidget(self.groupBox_3, 1, 0, 1, 1)
+
+        self.groupBox_6 = QGroupBox(self.frame_6)
+        self.groupBox_6.setObjectName(u"groupBox_6")
+        self.gridLayout_11 = QGridLayout(self.groupBox_6)
+        self.gridLayout_11.setObjectName(u"gridLayout_11")
+        self.label = QLabel(self.groupBox_6)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout_11.addWidget(self.label, 0, 0, 1, 1)
+
+
+        self.gridLayout_4.addWidget(self.groupBox_6, 3, 0, 1, 1)
 
         self.groupBox = QGroupBox(self.frame_6)
         self.groupBox.setObjectName(u"groupBox")
         self.gridLayout_7 = QGridLayout(self.groupBox)
         self.gridLayout_7.setObjectName(u"gridLayout_7")
-        self.sum_chkbx = QCheckBox(self.groupBox)
-        self.sum_chkbx.setObjectName(u"sum_chkbx")
+        self.doubleSpinBox = QDoubleSpinBox(self.groupBox)
+        self.doubleSpinBox.setObjectName(u"doubleSpinBox")
+        self.doubleSpinBox.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.doubleSpinBox.setDecimals(3)
+        self.doubleSpinBox.setMinimum(-180.000000000000000)
+        self.doubleSpinBox.setMaximum(180.000000000000000)
 
-        self.gridLayout_7.addWidget(self.sum_chkbx, 2, 0, 1, 1)
+        self.gridLayout_7.addWidget(self.doubleSpinBox, 4, 1, 1, 3)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.checkBox_pump = QCheckBox(self.groupBox)
+        self.checkBox_pump.setObjectName(u"checkBox_pump")
+        self.checkBox_pump.setEnabled(True)
+        font = QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.checkBox_pump.setFont(font)
+        self.checkBox_pump.setAutoFillBackground(False)
+        self.checkBox_pump.setChecked(True)
 
-        self.gridLayout_7.addItem(self.verticalSpacer_2, 5, 0, 1, 1)
+        self.gridLayout_7.addWidget(self.checkBox_pump, 8, 0, 1, 1)
 
         self.spinBox_2 = QSpinBox(self.groupBox)
         self.spinBox_2.setObjectName(u"spinBox_2")
@@ -300,6 +340,20 @@ class Ui_MainWindow(object):
         self.spinBox_2.setValue(1)
 
         self.gridLayout_7.addWidget(self.spinBox_2, 3, 3, 1, 1)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_7.addItem(self.verticalSpacer_2, 5, 0, 1, 1)
+
+        self.pushButton_5 = QPushButton(self.groupBox)
+        self.pushButton_5.setObjectName(u"pushButton_5")
+
+        self.gridLayout_7.addWidget(self.pushButton_5, 4, 0, 1, 1)
+
+        self.sum_chkbx = QCheckBox(self.groupBox)
+        self.sum_chkbx.setObjectName(u"sum_chkbx")
+
+        self.gridLayout_7.addWidget(self.sum_chkbx, 2, 0, 1, 1)
 
         self.comboBox_3 = QComboBox(self.groupBox)
         self.comboBox_3.addItem("")
@@ -314,20 +368,10 @@ class Ui_MainWindow(object):
 
         self.gridLayout_7.addWidget(self.checkBox, 3, 0, 1, 1)
 
-        self.pushButton_5 = QPushButton(self.groupBox)
-        self.pushButton_5.setObjectName(u"pushButton_5")
-
-        self.gridLayout_7.addWidget(self.pushButton_5, 4, 0, 1, 1)
-
         self.label_4 = QLabel(self.groupBox)
         self.label_4.setObjectName(u"label_4")
 
         self.gridLayout_7.addWidget(self.label_4, 3, 2, 1, 1)
-
-        self.label_7 = QLabel(self.groupBox)
-        self.label_7.setObjectName(u"label_7")
-
-        self.gridLayout_7.addWidget(self.label_7, 6, 0, 1, 2)
 
         self.label_6 = QLabel(self.groupBox)
         self.label_6.setObjectName(u"label_6")
@@ -342,34 +386,23 @@ class Ui_MainWindow(object):
 
         self.gridLayout_7.addWidget(self.spinBox, 3, 1, 1, 1)
 
-        self.doubleSpinBox = QDoubleSpinBox(self.groupBox)
-        self.doubleSpinBox.setObjectName(u"doubleSpinBox")
-        self.doubleSpinBox.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-        self.doubleSpinBox.setDecimals(3)
-        self.doubleSpinBox.setMinimum(-180.000000000000000)
-        self.doubleSpinBox.setMaximum(180.000000000000000)
-
-        self.gridLayout_7.addWidget(self.doubleSpinBox, 4, 1, 1, 3)
-
         self.export_img_btn = QPushButton(self.groupBox)
         self.export_img_btn.setObjectName(u"export_img_btn")
 
         self.gridLayout_7.addWidget(self.export_img_btn, 1, 0, 1, 1)
 
+        self.label_7 = QLabel(self.groupBox)
+        self.label_7.setObjectName(u"label_7")
+
+        self.gridLayout_7.addWidget(self.label_7, 7, 0, 1, 2)
+
+        self.shift_0order_btn = QPushButton(self.groupBox)
+        self.shift_0order_btn.setObjectName(u"shift_0order_btn")
+
+        self.gridLayout_7.addWidget(self.shift_0order_btn, 6, 0, 1, 1)
+
 
         self.gridLayout_4.addWidget(self.groupBox, 0, 0, 1, 1)
-
-        self.groupBox_6 = QGroupBox(self.frame_6)
-        self.groupBox_6.setObjectName(u"groupBox_6")
-        self.gridLayout_11 = QGridLayout(self.groupBox_6)
-        self.gridLayout_11.setObjectName(u"gridLayout_11")
-        self.label = QLabel(self.groupBox_6)
-        self.label.setObjectName(u"label")
-
-        self.gridLayout_11.addWidget(self.label, 0, 0, 1, 1)
-
-
-        self.gridLayout_4.addWidget(self.groupBox_6, 3, 0, 1, 1)
 
         self.gridLayout_4.setRowStretch(0, 1)
         self.gridLayout_4.setRowStretch(1, 1)
@@ -591,6 +624,8 @@ class Ui_MainWindow(object):
         self.menuTools.setObjectName(u"menuTools")
         self.menuBin_Data = QMenu(self.menuTools)
         self.menuBin_Data.setObjectName(u"menuBin_Data")
+        self.menuRemove_outliers = QMenu(self.menuTools)
+        self.menuRemove_outliers.setObjectName(u"menuRemove_outliers")
         self.menuView = QMenu(self.menubar)
         self.menuView.setObjectName(u"menuView")
         self.menuImage_mode = QMenu(self.menuView)
@@ -633,6 +668,7 @@ class Ui_MainWindow(object):
         self.menuPump_Probe.addAction(self.actionGaussian_smooth)
         self.menuPump_Probe.addAction(self.actionGaussian_smooth_ON_OFF)
         self.menuPump_Probe.addAction(self.actionON_OFF)
+        self.menuPump_Probe.addAction(self.actionRemove_hot_n_2)
         self.menuTools.addAction(self.actionRadial_Average)
         self.menuTools.addAction(self.menuBin_Data.menuAction())
         self.menuTools.addAction(self.actionSlice_Data)
@@ -646,10 +682,17 @@ class Ui_MainWindow(object):
         self.menuTools.addSeparator()
         self.menuTools.addAction(self.actionCalibrate_image)
         self.menuTools.addAction(self.actionMeasure_distance)
+        self.menuTools.addSeparator()
+        self.menuTools.addAction(self.menuRemove_outliers.menuAction())
         self.menuBin_Data.addAction(self.action2x2)
         self.menuBin_Data.addAction(self.action3x3)
         self.menuBin_Data.addAction(self.action5x5)
         self.menuBin_Data.addAction(self.action10x10)
+        self.menuRemove_outliers.addAction(self.action1)
+        self.menuRemove_outliers.addAction(self.action2)
+        self.menuRemove_outliers.addAction(self.action3)
+        self.menuRemove_outliers.addAction(self.action4)
+        self.menuRemove_outliers.addAction(self.action5)
         self.menuView.addAction(self.actionMetadata_Panel)
         self.menuView.addAction(self.menuImage_mode.menuAction())
         self.menuImage_mode.addAction(self.actionLinear)
@@ -721,6 +764,14 @@ class Ui_MainWindow(object):
         self.actionImport_Dataset_ON_OFF.setText(QCoreApplication.translate("MainWindow", u"Import Dataset ON OFF", None))
         self.actionGaussian_smooth_ON_OFF.setText(QCoreApplication.translate("MainWindow", u"Gaussian smooth ON OFF", None))
         self.actionON_OFF.setText(QCoreApplication.translate("MainWindow", u"ON-OFF", None))
+        self.actionRemove_hot_n_2.setText(QCoreApplication.translate("MainWindow", u"Remove hot (n=2)", None))
+        self.actionRemove_outliers.setText(QCoreApplication.translate("MainWindow", u"Remove outliers imgON", None))
+        self.actionRemove_outliers_imgOFF.setText(QCoreApplication.translate("MainWindow", u"Remove outliers imgOFF", None))
+        self.action1.setText(QCoreApplication.translate("MainWindow", u"1 SD", None))
+        self.action2.setText(QCoreApplication.translate("MainWindow", u"2 SD", None))
+        self.action3.setText(QCoreApplication.translate("MainWindow", u"2.5 SD", None))
+        self.action4.setText(QCoreApplication.translate("MainWindow", u"3 SD", None))
+        self.action5.setText(QCoreApplication.translate("MainWindow", u"4 SD", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Fit tools", None))
         self.fit_G.setText(QCoreApplication.translate("MainWindow", u"G", None))
         self.fit_V.setText(QCoreApplication.translate("MainWindow", u"V", None))
@@ -728,29 +779,31 @@ class Ui_MainWindow(object):
         self.fit_gauss_btn.setText(QCoreApplication.translate("MainWindow", u"Fit all Gauss", None))
         self.fit_chkbx.setText(QCoreApplication.translate("MainWindow", u"Fit", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"ROI tools", None))
-        self.roi_chkbx.setText(QCoreApplication.translate("MainWindow", u"ROI", None))
-        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Remove All", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add", None))
+        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Remove All", None))
         self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Remove", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"ROI autoscale", None))
         self.label_2.setText("")
-        self.checkBox_2.setText(QCoreApplication.translate("MainWindow", u"Snap", None))
         self.checkBox_3.setText(QCoreApplication.translate("MainWindow", u"Track evolution", None))
+        self.checkBox_2.setText(QCoreApplication.translate("MainWindow", u"Snap", None))
+        self.roi_chkbx.setText(QCoreApplication.translate("MainWindow", u"ROI", None))
+        self.groupBox_6.setTitle(QCoreApplication.translate("MainWindow", u"Ruler", None))
+        self.label.setText("")
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Image tools", None))
+        self.doubleSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u"\u00b0", None))
+        self.checkBox_pump.setText(QCoreApplication.translate("MainWindow", u"Check pump ", None))
+        self.pushButton_5.setText(QCoreApplication.translate("MainWindow", u"Rotate", None))
         self.sum_chkbx.setText(QCoreApplication.translate("MainWindow", u"Sum All", None))
         self.comboBox_3.setItemText(0, QCoreApplication.translate("MainWindow", u"Rainbow", None))
         self.comboBox_3.setItemText(1, QCoreApplication.translate("MainWindow", u"Grayscale", None))
         self.comboBox_3.setItemText(2, QCoreApplication.translate("MainWindow", u"Hot-Cold", None))
 
         self.checkBox.setText(QCoreApplication.translate("MainWindow", u"Sum range:", None))
-        self.pushButton_5.setText(QCoreApplication.translate("MainWindow", u"Rotate", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"to", None))
-        self.label_7.setText("")
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Colormap:", None))
-        self.doubleSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u"\u00b0", None))
         self.export_img_btn.setText(QCoreApplication.translate("MainWindow", u"Img to Clipboard", None))
-        self.groupBox_6.setTitle(QCoreApplication.translate("MainWindow", u"Ruler", None))
-        self.label.setText("")
+        self.label_7.setText("")
+        self.shift_0order_btn.setText(QCoreApplication.translate("MainWindow", u"shift 0th order", None))
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"x", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"y", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"PT", None))
@@ -765,6 +818,7 @@ class Ui_MainWindow(object):
         self.menuPump_Probe.setTitle(QCoreApplication.translate("MainWindow", u"Pump-Probe", None))
         self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
         self.menuBin_Data.setTitle(QCoreApplication.translate("MainWindow", u"Bin Data", None))
+        self.menuRemove_outliers.setTitle(QCoreApplication.translate("MainWindow", u"Remove outliers", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
         self.menuImage_mode.setTitle(QCoreApplication.translate("MainWindow", u"Image mode", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))

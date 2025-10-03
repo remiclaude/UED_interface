@@ -1744,17 +1744,6 @@ scan_start_btn.clicked.connect(SimStep_rocking_curve_start)
 scan_stop_btn.clicked.connect(SimStep_rocking_curve_stop)
 
 
-import serial
-
-try:
-    ser = serial.Serial('COM9', 9600, timeout=1)
-    print("✅ COM9 opened successfully!")
-    ser.close()
-except serial.SerialException as e:
-    print(f"❌ Could not open COM9: {e}")
-    
-
-
 ser_lakeshore = serial.Serial()       #must be something related to temperature sensor ?
 ser_lakeshore.port = 'COM9'
 ser_lakeshore.baudrate = 57600
@@ -3587,8 +3576,6 @@ def set_GladzPD():
         
 def Gladz_data():
     global glaz
-    #res = glaz.runMeasurement()  #chiara
-    #print("runMeasurement result:", res)  #chiara
     data = np.ndarray(scan_cnt, dtype=np.double)
     data_ctype = data.ctypes.data_as(POINTER(c_double))
     glaz.getPDValues.argtypes = [c_int, c_int, POINTER(c_int), POINTER(c_double)]

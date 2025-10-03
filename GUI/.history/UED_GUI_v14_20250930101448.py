@@ -1743,7 +1743,13 @@ axis_th_rbtn.toggled.connect(select_scan_axis)
 scan_start_btn.clicked.connect(SimStep_rocking_curve_start)
 scan_stop_btn.clicked.connect(SimStep_rocking_curve_stop)
 
+import serial.tools.list_ports
 
+ports = serial.tools.list_ports.comports()
+print("Available COM ports:")
+for port in ports:
+    print(f" - {port.device}")
+    
 import serial
 
 try:
