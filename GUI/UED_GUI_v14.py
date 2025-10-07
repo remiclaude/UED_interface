@@ -293,7 +293,7 @@ app.setStyle('Windows10')
 
 
 
-new_main_window = uic.loadUi("./Main_UED.ui")
+new_main_window = uic.loadUi("./Main_UED_new.ui")
 # new_main_window.resize(1920, 1160)
 window_leakvalve = uic.loadUi("Leak_valve_main_window.ui")
 window_notes = uic.loadUi("notes.ui")
