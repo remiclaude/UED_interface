@@ -298,7 +298,7 @@ app.setStyle('Windows10')
 
 
 
-new_main_window = uic.loadUi("./Main_UED_new.ui")
+new_main_window = uic.loadUi("./Main_UED.ui")
 # new_main_window.resize(1920, 1160)
 window_leakvalve = uic.loadUi("Leak_valve_main_window.ui")
 window_notes = uic.loadUi("notes.ui")
@@ -3504,7 +3504,6 @@ if simulator == 0:
     print(resourceList)
 
     index = 12 #sept 2025: used to be 6, changed pulser box and is now 12
-    print("Requested index:", index, "valid 0–", len(resourceList)-1)
     pulser = A7_pulser(resourceList[index])
 else:
     pulser = FourChannelPulser()

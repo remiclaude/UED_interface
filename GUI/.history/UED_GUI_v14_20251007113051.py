@@ -3504,7 +3504,6 @@ if simulator == 0:
     print(resourceList)
 
     index = 12 #sept 2025: used to be 6, changed pulser box and is now 12
-    print("Requested index:", index, "valid 0–", len(resourceList)-1)
     pulser = A7_pulser(resourceList[index])
 else:
     pulser = FourChannelPulser()

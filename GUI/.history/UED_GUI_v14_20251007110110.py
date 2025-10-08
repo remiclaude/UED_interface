@@ -298,7 +298,7 @@ app.setStyle('Windows10')
 
 
 
-new_main_window = uic.loadUi("./Main_UED_new.ui")
+new_main_window = uic.loadUi("./Main_UED.ui")
 # new_main_window.resize(1920, 1160)
 window_leakvalve = uic.loadUi("Leak_valve_main_window.ui")
 window_notes = uic.loadUi("notes.ui")
@@ -2043,6 +2043,22 @@ def pressure_log():
 chopper = MC2000B('COM12')
 # chopper = 0
 
+#october 2025: debugging
+# Option 1: pyuic style
+try:
+    ui.chopper_start_btn.clicked.connect(chopper_start)
+    print("Connected via ui.*")
+except Exception as e:
+    print("ui.* not present:", e)
+
+# Option 2: loadUi style
+try:
+    new_main_window.chopper_start_btn.clicked.connect(chopper_start)
+    print("Connected via new_main_window.*")
+except Exception as e:
+    print("new_main_window.* not present:", e)
+
+
 def chopper_start():
     chopper.enable = True
     
@@ -3504,7 +3520,6 @@ if simulator == 0:
     print(resourceList)
 
     index = 12 #sept 2025: used to be 6, changed pulser box and is now 12
-    print("Requested index:", index, "valid 0–", len(resourceList)-1)
     pulser = A7_pulser(resourceList[index])
 else:
     pulser = FourChannelPulser()

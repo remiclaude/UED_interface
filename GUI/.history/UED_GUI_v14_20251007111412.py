@@ -298,11 +298,34 @@ app.setStyle('Windows10')
 
 
 
-new_main_window = uic.loadUi("./Main_UED_new.ui")
+new_main_window = uic.loadUi("./Main_UED.ui")
 # new_main_window.resize(1920, 1160)
 window_leakvalve = uic.loadUi("Leak_valve_main_window.ui")
 window_notes = uic.loadUi("notes.ui")
 window_settings_detector = uic.loadUi("settings_detector.ui")
+
+#oct 2025 debugging 
+from PyQt6.QtWidgets import QPushButton
+
+# confirm we really loaded the file we think we did
+import os
+print("CWD:", os.getcwd())
+print("Loaded UI:", os.path.abspath("./Main_UED.ui"))
+
+# try to find the button by objectName
+btn = new_main_window.findChild(QPushButton, "chopper_start_btn")
+
+if btn is None:
+    # Dump all QPushButton names to see what it’s actually called
+    names = [(type(w).__name__, w.objectName()) 
+             for w in new_main_window.findChildren(QPushButton)]
+    print("No QPushButton named 'chopper_start_btn'. Available buttons:")
+    for t, n in names:
+        print("  ", t, n)
+else:
+    btn.clicked.connect(chopper_start)
+    print("Connected chopper_start_btn")
+#debug finished
 new_main_window.showMaximized()
 
 img_1 = new_main_window.main_image
@@ -2051,9 +2074,9 @@ def chopper_stop():
     
     
 
-new_main_window.chopper_start_btn.clicked.connect(chopper_start)
-new_main_window.chopper_stop_btn.clicked.connect(chopper_stop)
-chopper_safety_box = new_main_window.chopper_safety_box 
+#new_main_window.chopper_start_btn.clicked.connect(chopper_start)
+#new_main_window.chopper_stop_btn.clicked.connect(chopper_stop)
+#chopper_safety_box = new_main_window.chopper_safety_box 
 
 
 shutter_connect_btn = new_main_window.shutter_connect_btn
@@ -3504,7 +3527,6 @@ if simulator == 0:
     print(resourceList)
 
     index = 12 #sept 2025: used to be 6, changed pulser box and is now 12
-    print("Requested index:", index, "valid 0–", len(resourceList)-1)
     pulser = A7_pulser(resourceList[index])
 else:
     pulser = FourChannelPulser()
